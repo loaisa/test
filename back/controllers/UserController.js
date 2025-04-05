@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'; // импортируем для создания токена
 import UserModel from '../models/User.js'
 import bcrypt from 'bcrypt'
-
+import 'dotenv/config'
 
 export const register = async (req, res) => {
     try {
@@ -10,6 +10,15 @@ export const register = async (req, res) => {
         const salt = await bcrypt.genSalt(10) //Генерируем соль
         const hash = await bcrypt.hash(password, salt) //Зашифровываем пароль
 
+        const email = req.body.email
+
+        const existingUser = await UserModel.findOne({ email: email }) //Ищем пользователя по email     
+        if (existingUser) {
+            return res.status(400).json({
+                message: 'Данный email уже зарегистрирован' //Если пользователь с таким email уже существует, то возвращаем ошибку
+            })
+        }
+
         const doc = new UserModel({
             email: req.body.email,
             fullName: req.body.fullName,
@@ -17,11 +26,12 @@ export const register = async (req, res) => {
             avatarUrl: req.body.avatarUrl,
         }) //Создаем пользователя
 
+
         const user = await doc.save() //Сохраняем пользователя в базу данных
 
         const token = jwt.sign({
             _id: user._id,
-        }, process.env.REACT_APP_JWT_SECRET, { expiresIn: '30d' }) //Создаем токен для пользователя и записываем в него id пользователя и секретный ключ и срок действия токена
+        }, process.env.JWT_SECRET, { expiresIn: '30d' }) //Создаем токен для пользователя и записываем в него id пользователя и секретный ключ и срок действия токена
 
         const { passwordHash, ...userData } = user._doc //Избавляемся от passwordHash  
 
@@ -61,7 +71,7 @@ export const login = async (req, res) => {
 
         const token = jwt.sign({
             _id: user._id,
-        }, 'secret', { expiresIn: '30d' }) //Создаем токен для пользователя и записываем в него id пользователя и секретный ключ и срок действия токена
+        }, process.env.JWT_SECRET, { expiresIn: '30d' }) //Создаем токен для пользователя и записываем в него id пользователя и секретный ключ и срок действия токена
 
         const { passwordHash, ...userData } = user._doc //Избавляемся от passwordHash  
 

@@ -1,9 +1,12 @@
 
+import PostList from '../components/Posts/PostList';
+import Container from '@mui/material/Container';
 const MainPage = () => {
+
     return (
-        <div>
-            <h1>MainPage</h1>
-        </div>
+        <Container maxWidth="xl" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <PostList />
+        </Container>
     )
 }
 

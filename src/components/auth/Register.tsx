@@ -1,8 +1,10 @@
 import { Paper, Typography, Box, Container, TextField, Button, IconButton, InputAdornment } from "@mui/material";
 import { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
+import { authApi } from "../../services/api";
+import { useNavigate } from "react-router-dom";
 const Register = () => {
+  const navigate = useNavigate()
     const [formData, setFormData] = useState({
         email: '',
         fullName: '',
@@ -16,8 +18,16 @@ const Register = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value }) //обновляем state
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
         e.preventDefault()
+        try{
+          const response = await authApi.register(formData.email, formData.fullName, formData.password)
+          navigate('/login')  
+
+        }catch(error: any){
+          setError(error.response.data.message)
+          console.log(error)
+        }
     }
     return (
         <Container component="main" maxWidth="xs">
@@ -60,7 +70,7 @@ const Register = () => {
                 required
                 fullWidth
                 id="fullName"
-                label="Полное имя"
+
                 name="fullName"
                 autoComplete="name"
                 value={formData.fullName}
@@ -102,7 +112,7 @@ const Register = () => {
               </Button>
               {error && (
                 <Typography color="error" sx={{ mt: 1 }}>
-                  {error} Вася
+                  {error}
                 </Typography>
               )}
               <Button
