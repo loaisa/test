@@ -3,10 +3,17 @@ import { postApi } from "../../services/api";
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => { //получение всех постов
   const response = await postApi.getPosts();
-  return response.data;
+  console.log(response);
+  return response;
 });
 
-const initialState = {
+type PostState = {
+  posts: any[];
+  loading: boolean;
+  error: string | null;
+};
+
+const initialState: PostState = {
   posts: [],
   loading: false,
   error: null,
@@ -16,6 +23,19 @@ const postsSlice = createSlice({
   name: 'posts',
   initialState,
   reducers: {},
+  extraReducers: (builder) => { 
+    builder.addCase(fetchPosts.pending, (state) => { //если запрос выполняется
+      state.loading = true; //устанавливаем loading в true
+    });
+    builder.addCase(fetchPosts.fulfilled, (state, action) => { //если запрос выполнен успешно
+      state.posts = action.payload; //сохраняем посты в state
+      state.loading = false; //устанавливаем loading в false
+    });
+    builder.addCase(fetchPosts.rejected, (state, action) => { //если запрос выполнен с ошибкой
+      state.error = action.error.message || null; //сохраняем ошибку в state
+      state.loading = false; //устанавливаем loading в false
+    });
+  },
 });
 
 export default postsSlice.reducer;

@@ -1,10 +1,13 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { authApi } from "../../services/api";
+
+import { useDispatch } from "react-redux";
+import { login } from "../../store/slices/authSlice";
+import { AppDispatch } from "../../store/store";
 
 const Login = () => {
-
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
@@ -20,14 +23,13 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
       e.preventDefault() //отменяем перезагрузку страницы
       try{
-        const response = await authApi.login(formData.email, formData.password)
-        navigate('/')   
+        const response = await dispatch(login(formData))
         console.log(response)
+        navigate('/')   
       }catch(error: any){
         setError(error.response.data.message)
         console.log(error)
       }
-
     }
 
 

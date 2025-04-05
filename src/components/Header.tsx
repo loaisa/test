@@ -11,16 +11,19 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+
 import { useNavigate } from 'react-router-dom';
-
-
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
+import { RootState } from '../store/store';
 const pages = ['Главная'];
 const settings = ['Профиль', 'Мои посты', 'Выйти'];
 
 const Header = () => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const {isAuth, user} = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
 
@@ -40,7 +43,7 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -103,9 +106,11 @@ const Header = () => {
               </Button>
             ))}
           </Box>
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+          {isAuth ? (
+            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+              <Typography sx={{ mr: 2 }}>{user?.fullName}</Typography>
+              <Tooltip title="Open settings">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
               </IconButton>
             </Tooltip>
@@ -138,6 +143,14 @@ const Header = () => {
               ))}
             </Menu>
           </Box>
+          ) : (
+            <Box sx={{ flexGrow: 0 }}>
+              <Typography>
+                <Button onClick={() => navigate('/login')} sx={{ color: 'white' }}>Войти</Button>
+                <Button onClick={() => navigate('/register')} sx={{ color: 'white' }}>Зарегистрироваться</Button>
+              </Typography>
+            </Box>
+          )}
         </Toolbar>
       </Container>
     </AppBar>

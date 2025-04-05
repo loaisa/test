@@ -6,9 +6,9 @@ import CardActions from '@mui/material/CardActions';
 import { CardHeader, CardMedia, IconButton, Grid, Skeleton, Box } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../store/slices/postsSlice';
-import { AppDispatch } from '../../store/store';
+import { AppDispatch, RootState } from '../../store/store';
 
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
@@ -30,8 +30,7 @@ const PostSkeleton = () => (
 );
 
 const PostList = () => {
-    const [posts, setPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { posts, loading } = useSelector((state: RootState) => state.posts); //получение posts и loading из store
 
     const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
 
@@ -52,15 +51,10 @@ const PostList = () => {
     return (
         <Box sx={{ width: '100%' }}>
             {posts.map((post) => (
-              <Card sx={{ width: '100%', margin: 2, gap: 2 }} key={post._id}>
+              <Card sx={{ width: '100%', margin: 4, gap: 4 }} key={post._id}>
                     <CardHeader
-                      avatar={
-                        <Avatar sx={{ bgcolor: "red" }} aria-label="recipe">
-                          R
-                        </Avatar>
-                      }
+                      
                       title={post.title}
-                      subheader={new Date(post.createdAt).toLocaleDateString()}
                     />
                     <CardMedia
                       component="img"
@@ -69,8 +63,14 @@ const PostList = () => {
                       alt="Paella dish"
                     />
                     <CardContent>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {post.content}
+                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                        {post.text}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                        Автор: {post.author}
                       </Typography>
                     </CardContent>
                     <CardActions disableSpacing>

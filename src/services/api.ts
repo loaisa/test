@@ -6,6 +6,15 @@ const api = axios.create({
     baseURL: API_URL,
 }); 
 
+// Добавляем перехватчик для добавления токена
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 export const authApi = {
     register: async (email: string, fullName: string, password: string) => { //регистрация пользователя
         const response = await api.post('/auth/register', { email, fullName, password }); //отправляем запрос на регистрацию и получаем ответ

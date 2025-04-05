@@ -25,7 +25,7 @@ app.listen(3001, (err) => {
 }); //Запустили сервер на порту 
 
 app.use(cors({
-    origin: 'http://localhost:3000', // URL вашего фронтенда
+    origin: '*', // URL вашего фронтенда
     credentials: true
   }));
 const upload = multer({ 
@@ -55,7 +55,7 @@ app.post('/auth/register', registerValidation, validationErrors, register) //п�
 app.get('/auth/me', checkAuth, getMe) //проверяем авторизацию и получаем информацию о пользователе
 app.get('/users/:id', getOneUser) //получаем один пользователя по id
 
-app.get('/posts', getAll) //получаем последние теги
+app.get('/posts', getAll) //получаем все посты
 app.get('/posts/user/:id', checkAuth, getUserPosts) //получаем посты пользователя по id
 app.get('/posts/:id', getOne) //получаем один пост по id
 app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, createPost) //проверяем авторизацию и валидацию поста, статью нельзя создать без авторизации и отправляем ошибки
