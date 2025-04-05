@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express'; // импортируем для создания сервера
 import mongoose from 'mongoose'; // импортируем для подключения к MongoDB
 import cors from 'cors'; // импортируем для обработки CORS
@@ -9,7 +10,7 @@ import multer from 'multer' // импортируем для загрузки и
 import { validationErrors } from './utils/VallidationErros.js' // импортируем для проверки валидации
 const app = express(); //создали сервер
 
-mongoose.connect(process.env.REACT_APP_MONGO_URL).then(() => {
+mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
 }).catch((err) => {
     console.log(err);
@@ -49,8 +50,8 @@ app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //заг
 
 app.use('/uploads', express.static('uploads')) // если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
-app.post('/login', loginValidation, validationErrors, login); //проверяем валидацию и логиним пользователя и отправляем ошибки
-app.post('/register', registerValidation, validationErrors, register) //проверяем валидацию и регистрируем пользователя и отправляем ошибки
+app.post('/auth/login', loginValidation, validationErrors, login); //проверяем валидацию и логиним пользователя и отправляем ошибки
+app.post('/auth/register', registerValidation, validationErrors, register) //проверяем валидацию и регистрируем пользователя и отправляем ошибки
 app.get('/auth/me', checkAuth, getMe) //проверяем авторизацию и получаем информацию о пользователе
 app.get('/users/:id', getOneUser) //получаем один пользователя по id
 

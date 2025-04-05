@@ -1,7 +1,12 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { authApi } from "../../services/api";
 
 const Login = () => {
+
+  const navigate = useNavigate()
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -12,10 +17,22 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value }) //обновляем state
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
-        e.preventDefault() //отменяем перезагрузку страницы
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
+      e.preventDefault() //отменяем перезагрузку страницы
+      try{
+        const response = await authApi.login(formData.email, formData.password)
+        navigate('/')   
+        console.log(response)
+      }catch(error: any){
+        setError(error.response.data.message)
+        console.log(error)
+      }
+
     }
+
+
     return (
+        <Container component="main" maxWidth="xs">
         <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography component="h1" variant="h5">
             Вход
@@ -58,8 +75,17 @@ const Login = () => {
             >
               Войти
             </Button>
+            <Button
+                fullWidth
+                variant="text"
+                sx={{ mt: 1 }}
+                href="/register"
+              >
+                Нет аккаунта? Зарегистрироваться
+              </Button>
           </Box>
         </Box>
+        </Container>
       );
 }
 
