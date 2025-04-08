@@ -1,37 +1,38 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {useNavigate } from "react-router-dom";
 
 import { useDispatch } from "react-redux";
-import { login } from "../../store/slices/authSlice";
+import { fetchLogin } from "../../store/slices/authSlice";
 import { AppDispatch } from "../../store/store";
+import { useForm } from "react-hook-form";
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate()
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    })
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+    mode: 'onChange',
+  });
     const [error, setError] = useState('')
     
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { //обработчик изменения поля
-        setFormData({ ...formData, [e.target.name]: e.target.value }) //обновляем state
-    }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
-      e.preventDefault() //отменяем перезагрузку страницы
-      try{
-        const response = await dispatch(login(formData))
-        console.log(response)
-        navigate('/')   
-      }catch(error: any){
-        setError(error.response.data.message)
-        console.log(error)
+    const onSubmit = async (data: any) => { //обработчик отправки формы
+      try {
+        const response = await dispatch(fetchLogin(data));
+        if (response.meta.requestStatus === 'fulfilled') { //если запрос выполнен успешно
+          navigate('/');
+        } else if (response.meta.requestStatus === 'rejected') { //если запрос выполнен с ошибкой
+          setError('Неверный email или пароль');
+        }
+      } catch (error: any) {
+        setError(error.response?.data?.message || 'Произошла ошибка при входе');
       }
     }
-
 
     return (
         <Container component="main" maxWidth="xs">
@@ -44,30 +45,30 @@ const Login = () => {
               {error}
             </Typography>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
               fullWidth
               id="email"
               label="Email"
-              name="email"
               autoComplete="email"
               autoFocus
-              value={formData.email}
-              onChange={handleChange}
+              {...register('email', { required: 'Email обязателен' })}
+              error={!!errors.email}
+              helperText={errors.email?.message}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password"
               label="Пароль"
               type="password"
               id="password"
               autoComplete="current-password"
-              value={formData.password}
-              onChange={handleChange}
+              {...register('password', { required: 'Пароль обязателен' })}
+              error={!!errors.password}
+                helperText={errors.password?.message}
             />
             <Button
               type="submit"

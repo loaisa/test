@@ -3,38 +3,34 @@ import { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { register } from "../../store/slices/authSlice";
+import { fetchRegister } from "../../store/slices/authSlice";
 import { AppDispatch } from "../../store/store";
-
+import { useForm } from "react-hook-form";
 
 const Register = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    email: '',
-    fullName: '',
-    password: '',
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('') //состояние для ошибки
-  const [loading, setLoading] = useState(false)
+  const dispatch = useDispatch<AppDispatch>();  
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { //обработчик изменения поля
-    setFormData({ ...formData, [e.target.name]: e.target.value }) //обновляем state
-  }
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      email: '',
+      fullName: '',
+      password: '',
+    },
+    mode: 'onChange',
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { //обработчик отправки формы
-    e.preventDefault()
+  const onSubmit = async (data: any) => {
     try {
-      const response = await dispatch(register(formData))
+      const response = await dispatch(fetchRegister(data));
       console.log(response)
-      navigate('/login')
-
+      navigate('/')
     } catch (error: any) {
-      setError(error.response.data.message)
-      console.log(error)
+      setError(error.response?.data?.message || 'Произошла ошибка при регистрации');
     }
-  }
+  };
+
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -58,69 +54,73 @@ const Register = () => {
           <Typography component="h1" variant="h5">
             Регистрация
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
               fullWidth
               id="email"
               label="Email"
-              name="email"
               autoComplete="email"
               autoFocus
-              value={formData.email}
-              onChange={handleChange}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              {...register('email', {
+                required: 'Email обязателен',
+                pattern: {
+                  value: /\S+@\S+\.\S+/,
+                  message: 'Email некорректен'
+                }
+              })}
             />
             <TextField
               margin="normal"
               required
               fullWidth
               id="fullName"
-
-              name="fullName"
+              label="Имя"
               autoComplete="name"
-              value={formData.fullName}
-              onChange={handleChange}
+              error={!!errors.fullName}
+              helperText={errors.fullName?.message}
+              {...register('fullName', {
+                required: 'Имя обязательно',
+                minLength: {
+                  value: 2,
+                  message: 'Имя должно содержать минимум 2 символа'
+                }
+              })}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password"
               label="Пароль"
-              type={showPassword ? 'text' : 'password'}
+              type="password"
               id="password"
               autoComplete="new-password"
-              value={formData.password}
-              onChange={handleChange}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              {...register('password', {
+                required: 'Пароль обязателен',
+                minLength: {
+                  value: 6,
+                  message: 'Пароль должен содержать минимум 6 символов'
+                }
+              })}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
             >
-              {loading ? 'Зарегистрироваться...' : 'Зарегистрироваться'}
+              Зарегистрироваться
             </Button>
-            {error && (
-              <Typography color="error" sx={{ mt: 1 }}>
-                {error}
-              </Typography>
-            )}
             <Button
               fullWidth
               variant="text"
@@ -136,4 +136,4 @@ const Register = () => {
   );
 }
 
-export default Register
+export default Register;

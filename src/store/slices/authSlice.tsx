@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '../../services/api';
 
-export const login = createAsyncThunk('auth/login', async (data: { email: string, password: string }) => { //логин пользователя
+export const fetchLogin = createAsyncThunk('auth/login', async (data: { email: string, password: string }) => { //логин пользователя
     const response = await authApi.login(data.email, data.password); //отправляем данные на сервер
     localStorage.setItem('token', response.token) //сохраняем токен в localStorage
     return response; //возвращаем ответ от сервера
 })
 
-export const register = createAsyncThunk('auth/register', async (data: { email: string, fullName: string, password: string }) => { //регистрация пользователя
+export const fetchRegister = createAsyncThunk('auth/register', async (data: { email: string, fullName: string, password: string }) => { //регистрация пользователя
     const response = await authApi.register(data.email, data.fullName, data.password); //отправляем данные на сервер
     localStorage.setItem('token', response.token) //сохраняем токен в localStorage
     return response; //возвращаем ответ от сервера
@@ -49,31 +49,31 @@ const authSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        builder.addCase(login.pending, (state) => { //если запрос выполняется
+        builder.addCase(fetchLogin.pending, (state) => { //если запрос выполняется
             state.loading = true; //устанавливаем loading в true
         })
-        builder.addCase(login.fulfilled, (state, action) => {   //если запрос выполнен успешно
+        builder.addCase(fetchLogin.fulfilled, (state, action) => {   //если запрос выполнен успешно
             state.token = action.payload.token; //сохраняем токен в state
             localStorage.setItem('token', action.payload.token)
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
             state.user = action.payload.user;
         })
-        builder.addCase(login.rejected, (state, action) => { //если запрос выполнен с ошибкой
+        builder.addCase(fetchLogin.rejected, (state, action) => { //если запрос выполнен с ошибкой
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })  
-        builder.addCase(register.pending, (state) => { //если запрос выполняется
-            state.loading = true; //устанавливаем loading в true
+        builder.addCase(fetchRegister.pending, (state) => { //если запрос выполняется
+        state.loading = true; //устанавливаем loading в true
         })
-        builder.addCase(register.fulfilled, (state, action) => { //если запрос выполнен успешно
+        builder.addCase(fetchRegister.fulfilled, (state, action) => { //если запрос выполнен успешно
             state.token = action.payload.token; //сохраняем токен в state
             localStorage.setItem('token', action.payload.token)
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
             state.user = action.payload.user;
         })
-        builder.addCase(register.rejected, (state, action) => { //если запрос выполнен с ошибкой    
+        builder.addCase(fetchRegister.rejected, (state, action) => { //если запрос выполнен с ошибкой    
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })

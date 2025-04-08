@@ -39,8 +39,7 @@ const upload = multer({
     })
 
 app.use(express.json()); //Сделали так, чтобы можно было принимать json в запросах
-
-
+app.use('/uploads', express.static('uploads'))  //если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
 app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //загружаем изображение и сохраняем его в папку uploads
     res.json({
@@ -48,7 +47,7 @@ app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //заг
     })
 }) 
 
-app.use('/uploads', express.static('uploads')) // если придёт запрос на /uploads, то отдаём файлы из папки uploads
+// если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
 app.post('/auth/login', loginValidation, validationErrors, login); //проверяем валидацию и логиним пользователя и отправляем ошибки
 app.post('/auth/register', registerValidation, validationErrors, register) //проверяем валидацию и регистрируем пользователя и отправляем ошибки

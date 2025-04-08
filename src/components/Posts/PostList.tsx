@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardActions from '@mui/material/CardActions';
 import { CardHeader, CardMedia, IconButton, Grid, Skeleton, Box } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../store/slices/postsSlice';
 import { AppDispatch, RootState } from '../../store/store';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
@@ -33,7 +34,7 @@ const PostList = () => {
     const { posts, loading } = useSelector((state: RootState) => state.posts); //получение posts и loading из store
 
     const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
-
+    console.log(posts)
     useEffect(() => {
         dispatch(fetchPosts()); //вызов fetchPosts
     }, []); 
@@ -59,8 +60,8 @@ const PostList = () => {
                     <CardMedia
                       component="img"
                       height="194"
-                      image={post.image}
-                      alt="Paella dish"
+                      image={`${API_URL}${post.imageUrl}`}
+                      alt={post.title}
                     />
                     <CardContent>
                       <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
@@ -70,7 +71,10 @@ const PostList = () => {
                         {new Date(post.createdAt).toLocaleDateString()}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
-                        Автор: {post.author}
+                        Автор: {post.user.fullName}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                        Просмотры: {post.viewsCount}
                       </Typography>
                     </CardContent>
                     <CardActions disableSpacing>
