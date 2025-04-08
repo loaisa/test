@@ -52,7 +52,7 @@ app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //заг
 app.post('/auth/login', loginValidation, validationErrors, login); //проверяем валидацию и логиним пользователя и отправляем ошибки
 app.post('/auth/register', registerValidation, validationErrors, register) //проверяем валидацию и регистрируем пользователя и отправляем ошибки
 app.get('/auth/me', checkAuth, getMe) //проверяем авторизацию и получаем информацию о пользователе
-app.get('/users/:id', getOneUser) //получаем один пользователя по id
+app.get('/users/:id', getOneUser) //получаем одного пользователя по id
 
 app.get('/posts', getAll) //получаем все посты
 app.get('/posts/user/:id', checkAuth, getUserPosts) //получаем посты пользователя по id

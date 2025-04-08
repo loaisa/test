@@ -8,7 +8,7 @@ export default (req, res, next) => { // Проверяем токен на ва�
 
     if (token) { //Если токен найден
         try {
-            const decoded = jwt.verify(token, 'secret') //Проверяем токен на валидность и декодируем его
+            const decoded = jwt.verify(token, process.env.JWT_SECRET) //Проверяем токен на валидность и декодируем его
             req.userId = decoded._id //Записываем id пользователя в request
             next() // всё ок, выполняем следующую функцию
         } catch (err) {

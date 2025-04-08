@@ -39,11 +39,11 @@ export const getAll = async (req, res) => {
 export const getOne = async (req, res) => {
     try {
         const postId = req.params.id //id поста из url
-        const post = await PostModel.findOneAndUpdate( //findOneAndUpdate - находит пост по id и обновляет его
-            { _id: postId },
+        const post = await PostModel.findByIdAndUpdate( //findByIdAndUpdate - находит пост по id и обновляет его
+            postId,
             { $inc: { viewsCount: 1 } }, //увеличиваем количество просмотров поста с помощью $inc
-            { new: true } //возвращает обновленный пост
-        )
+            { returnDocument: 'after' } //возвращает обновленный документ
+        ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] }); // Добавляем populate для пользователя, то есть заполняем поле user в посте
 
         if (!post) { //если пост не найден, возвращаем ошибку
             return res.status(404).json({
