@@ -50,5 +50,13 @@ export const postApi = {
     updatePost: async (id: string, title: string, content: string) => { //обновление поста
         const response = await api.put(`/posts/${id}`, { title, content }); //отправляем запрос на обновление поста и получаем ответ
         return response.data;
+    },
+    getUserPosts: async (id: string) => { //получение постов пользователя по id
+        const response = await api.get(`/posts/user/${id}`); //отправляем запрос на получение постов пользователя по id и получаем ответ
+        return response.data;
+    },
+    getTags: async () => { //получение всех тегов
+        const response = await api.get('/posts/tags'); //отправляем запрос на получение всех тегов и получаем ответ
+        return response.data;
     }
 }

@@ -3,7 +3,6 @@ import { postApi } from "../../services/api";
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => { //получение всех постов
   const response = await postApi.getPosts();
-  console.log(response);
   return response;
 });
 

@@ -3,11 +3,12 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardActions from '@mui/material/CardActions';
-import { CardHeader, CardMedia, IconButton, Grid, Skeleton, Box } from '@mui/material';
+  import { CardHeader, CardMedia, IconButton, Grid, Skeleton, Box, Link, Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../store/slices/postsSlice';
 import { AppDispatch, RootState } from '../../store/store';
+import { Link as RouterLink } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -34,7 +35,6 @@ const PostList = () => {
     const { posts, loading } = useSelector((state: RootState) => state.posts); //получение posts и loading из store
 
     const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
-    console.log(posts)
     useEffect(() => {
         dispatch(fetchPosts()); //вызов fetchPosts
     }, []); 
@@ -50,11 +50,10 @@ const PostList = () => {
     }
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%'}}>
             {posts.map((post) => (
-              <Card sx={{ width: '100%', margin: 4, gap: 4 }} key={post._id}>
+              <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }} key={post._id}>
                     <CardHeader
-                      
                       title={post.title}
                     />
                     <CardMedia
@@ -68,18 +67,21 @@ const PostList = () => {
                         {post.text}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
-                        {new Date(post.createdAt).toLocaleDateString()}
+                        Дата создания: {new Date(post.createdAt).toLocaleDateString()}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
                         Автор: {post.user.fullName}
                       </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>Тэги: {post.tags.join(', ')}</Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
                         Просмотры: {post.viewsCount}
                       </Typography>
                     </CardContent>
-                    <CardActions disableSpacing>
+                    <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between' }}>
+
+                    <Button sx={{margin: 1}} variant="contained"> <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>Открыть статью</RouterLink></Button>
                       <IconButton aria-label="add to favorites">
-                        <FavoriteIcon />
+                        <FavoriteIcon  />
                       </IconButton>
                     </CardActions>
                 </Card>

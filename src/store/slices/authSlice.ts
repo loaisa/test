@@ -18,6 +18,7 @@ export const checkAuth = createAsyncThunk('auth/check', async () => { //пров
     if (!token) {
         throw new Error('No token found'); //если токена нет, то выбрасываем ошибку
     }
+    
     const response = await authApi.getMe();
     return { user: response, token };
 });
@@ -54,10 +55,10 @@ const authSlice = createSlice({
         })
         builder.addCase(fetchLogin.fulfilled, (state, action) => {   //если запрос выполнен успешно
             state.token = action.payload.token; //сохраняем токен в state
-            localStorage.setItem('token', action.payload.token)
+            localStorage.setItem('token', action.payload.token) 
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
-            state.user = action.payload.user;
+            state.user = action.payload; //сохраняем пользователя в state
         })
         builder.addCase(fetchLogin.rejected, (state, action) => { //если запрос выполнен с ошибкой
             state.error = action.error.message || null; //сохраняем ошибку в state
@@ -77,16 +78,16 @@ const authSlice = createSlice({
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })
-        builder.addCase(checkAuth.pending, (state) => {
+        builder.addCase(checkAuth.pending, (state) => { //если запрос выполняется
             state.loading = true;
         });
-        builder.addCase(checkAuth.fulfilled, (state, action) => {
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-            state.isAuth = true;
-            state.loading = false;
+        builder.addCase(checkAuth.fulfilled, (state, action) => { //если запрос выполнен успешно
+            state.user = action.payload.user; //сохраняем пользователя в state
+            state.token = action.payload.token; //сохраняем токен в state
+            state.isAuth = true; //устанавливаем isAuth в true
+            state.loading = false; //устанавливаем loading в false
         });
-        builder.addCase(checkAuth.rejected, (state) => {
+        builder.addCase(checkAuth.rejected, (state) => { //если запрос выполнен с ошибкой
             state.user = null;
             state.token = null;
             state.isAuth = false;

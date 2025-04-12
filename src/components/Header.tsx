@@ -137,6 +137,9 @@ const Header = () => {
                     if (setting === 'Выйти') {
                       handleLogout()    ;
                     }
+                    if (setting === 'Мои посты') {
+                      navigate('/my-posts');
+                    }
                   }}
                   >{setting}</Typography>
                 </MenuItem>

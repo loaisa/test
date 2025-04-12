@@ -140,3 +140,15 @@ export const getUserPosts = async (req, res) => {
         })
     }
 }   
+
+export const getTags = async (req, res) => {
+    try {
+        const tags = await PostModel.distinct('tags').exec()
+        res.json(tags)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            message: 'Не удалось получить теги'
+        })
+    }
+}   
