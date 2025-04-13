@@ -1,7 +1,7 @@
 import { Paper, Typography, Box, Container, TextField, Button, IconButton, InputAdornment } from "@mui/material";
 import { useState } from "react";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { fetchRegister } from "../../store/slices/authSlice";
 import { AppDispatch } from "../../store/store";
@@ -14,19 +14,20 @@ const Register = () => {
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      email: '',
-      fullName: '',
-      password: '',
+      email: 'loaisa.zhenya3@gmail.com',
+      fullName: 'ddd1',
+      password: 'qwerty',
     },
     mode: 'onChange',
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit =  (data: any) => {
     try {
-      const response = await dispatch(fetchRegister(data));
+      const response =  dispatch(fetchRegister(data));
       console.log(response)
       navigate('/')
     } catch (error: any) {
+      console.log(error.response)
       setError(error.response?.data?.message || 'Произошла ошибка при регистрации');
     }
   };
@@ -89,6 +90,10 @@ const Register = () => {
               helperText={errors.fullName?.message}
               {...register('fullName', {
                 required: 'Имя обязательно',
+                pattern: {
+                  value: /^[а-яА-ЯёЁa-zA-Z\s]+$/,
+                  message: 'Имя должно состоять из букв'
+                },
                 minLength: {
                   value: 2,
                   message: 'Имя должно содержать минимум 2 символа'
@@ -125,7 +130,8 @@ const Register = () => {
               fullWidth
               variant="text"
               sx={{ mt: 1 }}
-              href="/login"
+              component={Link}
+              to="/login"
             >
               Уже есть аккаунт? Войти
             </Button>

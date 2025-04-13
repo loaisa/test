@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL; //ссылка на сервер
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 const api = axios.create({
     baseURL: API_URL,
-}); 
+});
 
 // Добавляем перехватчик для добавления токена
 api.interceptors.request.use((config) => {
@@ -15,48 +15,113 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-export const authApi = {
-    register: async (email: string, fullName: string, password: string) => { //регистрация пользователя
-        const response = await api.post('/auth/register', { email, fullName, password }); //отправляем запрос на регистрацию и получаем ответ
-        console.log(response)
-        return response.data;
-    },
-    login: async (email: string, password: string) => { //авторизация пользователя
-        const response = await api.post('/auth/login', { email, password }); //отправляем запрос на авторизацию и получаем ответ
-        return response.data;
-    },
-    getMe: async () => { //получение данных пользователя
-        const response = await api.get('/auth/me'); //отправляем запрос на получение данных пользователя и получаем ответ
-        return response.data;
-    },
-    getOneUser: async (id: string) => { //получение данных пользователя по id
-        const response = await api.get(`/users/${id}`); //отправляем запрос на получение данных пользователя по id и получаем ответ
-        return response.data;
-    }   
-} 
-export const postApi = {
-    createPost: async (title: string, content: string) => { //создание поста
-        const response = await api.post('/posts', { title, content }); //отправляем запрос на создание поста и получаем ответ
-        return response.data;
-    },
-    getPosts: async () => { //получение всех постов
-        const response = await api.get('/posts'); //отправляем запрос на получение всех постов и получаем ответ
-        return response.data;
-    },
-    getOnePost: async (id: string) => { //получение поста по id
-        const response = await api.get(`/posts/${id}`); //отправляем запрос на получение поста по id и получаем ответ
-        return response.data;
-    },
-    updatePost: async (id: string, title: string, content: string) => { //обновление поста
-        const response = await api.put(`/posts/${id}`, { title, content }); //отправляем запрос на обновление поста и получаем ответ
-        return response.data;
-    },
-    getUserPosts: async (id: string) => { //получение постов пользователя по id
-        const response = await api.get(`/posts/user/${id}`); //отправляем запрос на получение постов пользователя по id и получаем ответ
-        return response.data;
-    },
-    getTags: async () => { //получение всех тегов
-        const response = await api.get('/posts/tags'); //отправляем запрос на получение всех тегов и получаем ответ
-        return response.data;
+// Добавляем перехватчик для обработки ошибок
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            // Ошибка с ответом от сервера
+            return Promise.reject(error.response.data);
+        } else if (error.request) {
+            // Ошибка без ответа от сервера
+            return Promise.reject({ message: 'Нет ответа от сервера' });
+        } else {
+            // Ошибка при настройке запроса
+            return Promise.reject({ message: 'Ошибка при отправке запроса' });
+        }
     }
-}
+);
+
+export const authApi = {
+    register: async (email: string, fullName: string, password: string) => {
+        try {
+            const response = await api.post('/auth/register', { email, fullName, password });
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    login: async (email: string, password: string) => {
+        try {
+            const response = await api.post('/auth/login', { email, password });
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getMe: async () => {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getOneUser: async (id: string) => {
+        try {
+            const response = await api.get(`/users/${id}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    }
+};
+
+export const postApi = {
+    createPost: async (title: string, content: string) => {
+        try {
+            const response = await api.post('/posts', { title, content });
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getPosts: async () => {
+        try {
+            const response = await api.get('/posts');
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getOnePost: async (id: string) => {
+        try {
+            const response = await api.get(`/posts/${id}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    updatePost: async (id: string, title: string, content: string) => {
+        try {
+            const response = await api.put(`/posts/${id}`, { title, content });
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getUserPosts: async (id: string) => {
+        try {
+            const response = await api.get(`/posts/user/${id}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getTags: async () => {
+        try {
+            const response = await api.get('/posts/tags');
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    remove: async (id: string) => {
+        try {
+            const response = await api.delete(`/posts/${id}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    }
+};

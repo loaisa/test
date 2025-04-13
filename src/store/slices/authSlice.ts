@@ -64,6 +64,8 @@ const authSlice = createSlice({
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })  
+
+
         builder.addCase(fetchRegister.pending, (state) => { //если запрос выполняется
         state.loading = true; //устанавливаем loading в true
         })
@@ -72,12 +74,14 @@ const authSlice = createSlice({
             localStorage.setItem('token', action.payload.token)
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
-            state.user = action.payload.user;
+            state.user = action.payload;
         })
         builder.addCase(fetchRegister.rejected, (state, action) => { //если запрос выполнен с ошибкой    
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })
+
+
         builder.addCase(checkAuth.pending, (state) => { //если запрос выполняется
             state.loading = true;
         });

@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardActions from '@mui/material/CardActions';
-  import { CardHeader, CardMedia, IconButton, Grid, Skeleton, Box, Link, Button } from '@mui/material';
+  import { CardHeader, CardMedia, IconButton, Skeleton, Box, Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../store/slices/postsSlice';

@@ -25,9 +25,11 @@ app.listen(3001, (err) => {
 }); //Запустили сервер на порту 
 
 app.use(cors({
-    origin: '*', // URL вашего фронтенда
-    credentials: true
-  }));
+    origin: `*`,
+    // credentials: true,
+    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    // allowedHeaders: ['Content-Type', 'Authorization']
+}));
 const upload = multer({ 
     storage: multer.diskStorage({ //конфигурация для multer
         destination: (_, __, cb) => { //куда будем сохранять файлы

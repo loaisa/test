@@ -13,26 +13,13 @@ import { AppDispatch, RootState } from './store/store';
 import { checkAuth } from './store/slices/authSlice';
 
 function App() {
-  const { loading } = useSelector((state: RootState) => state.auth);
+
+  
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
-
-  if (loading) {
-    return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
 
   return (
     <Router>

@@ -1,12 +1,13 @@
 import { Skeleton, Typography } from "@mui/material";
-import { RootState } from "../../store/store";
-import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store/store";
+import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { postApi } from "../../services/api";
 import { Card, CardContent, CardHeader, CardMedia, Box, CircularProgress, CardActions, IconButton, Link, Button } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { Navigate } from "react-router-dom";
 import { Link as RouterLink } from 'react-router-dom';
+import { deletePost } from "../../store/slices/postsSlice";
 const API_URL = process.env.REACT_APP_API_URL;
 
 interface Post {
@@ -44,6 +45,8 @@ const MyPosts = () => {
   const { isAuth, user } = useSelector((state: RootState) => state.auth);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+
 
   useEffect(() => {
     const getUserPosts = async () => {
@@ -60,11 +63,24 @@ const MyPosts = () => {
     getUserPosts();
   }, [isAuth, user]);
 
-  console.log(isAuth)
+
+  const handleDelete = (id: string) => {
+    alert('Удалить пост?');
+    try {
+      dispatch(deletePost(id));
+      setPosts(posts.filter(post => post._id !== id));
+      console.log('Пост удален');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Box sx={{ width: '90%' }}>
-      {posts.map((post) => (
+      <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success">Создать пост</Button>
+      {posts.length > 0 ? posts.map((post) => (
         <Card sx={{ width: '100%', margin: 4, gap: 4 }} key={post._id}>
           <CardHeader
 
@@ -98,12 +114,13 @@ const MyPosts = () => {
             </IconButton>
           </CardActions>
           <Box sx={{margin: 2}}>
-            <Button sx={{margin: 1}} variant="contained" color="error">Удалить</Button>
+            <Button sx={{margin: 1}} variant="contained" color="error" onClick={() => handleDelete(post._id)}>Удалить</Button>
             <Button sx={{margin: 1}} variant="contained" color="success">Редактировать</Button>
             <Button sx={{margin: 1}} variant="contained"> <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>Открыть статью</RouterLink></Button>
           </Box> 
         </Card>
-      ))}
+      )): <Typography sx={{margin: 4}} variant="h6">Постов нет</Typography> }
+
     </Box>
   )
 }

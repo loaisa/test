@@ -6,6 +6,11 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => { //�
   return response;
 });
 
+export const deletePost = createAsyncThunk('posts/deletePost', async (id: string) => { //удаление поста
+  const response = await postApi.remove(id);
+  return response;
+});
+
 type PostState = {
   posts: any[];
   loading: boolean;
@@ -34,6 +39,14 @@ const postsSlice = createSlice({
       state.error = action.error.message || null; //сохраняем ошибку в state
       state.loading = false; //устанавливаем loading в false
     });
+
+    builder.addCase(deletePost.pending, (state) => { //если запрос выполняется
+      state.loading = true; //устанавливаем loading в true
+    });
+    builder.addCase(deletePost.fulfilled, (state, action) => { //если запрос выполнен успешно
+      state.posts = state.posts.filter((post) => post._id !== action.payload); //удаляем пост из state
+      state.loading = false; //устанавливаем loading в false
+    }); 
   },
 });
 
