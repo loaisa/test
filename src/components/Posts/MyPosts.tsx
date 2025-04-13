@@ -44,20 +44,16 @@ const PostSkeleton = () => (
 const MyPosts = () => {
   const { isAuth, user } = useSelector((state: RootState) => state.auth);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch<AppDispatch>();
 
 
   useEffect(() => {
     const getUserPosts = async () => {
       try {
-        setLoading(true);
         const response = await postApi.getUserPosts(user._id);
         setPosts(response);
       } catch (error) {
         console.log(error);
-      } finally {
-        setLoading(false);
       }
     }
     getUserPosts();
@@ -72,14 +68,12 @@ const MyPosts = () => {
       console.log('Пост удален');
     } catch (error) {
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
     <Box sx={{ width: '90%' }}>
-      <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success">Создать пост</Button>
+      <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success"> <RouterLink to="/create-post" style={{textDecoration: 'none', color: 'white'}}>Создать пост</RouterLink></Button>
       {posts.length > 0 ? posts.map((post) => (
         <Card sx={{ width: '100%', margin: 4, gap: 4 }} key={post._id}>
           <CardHeader

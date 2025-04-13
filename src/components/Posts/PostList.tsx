@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardActions from '@mui/material/CardActions';
-  import { CardHeader, CardMedia, IconButton, Skeleton, Box, Button } from '@mui/material';
+import { CardHeader, CardMedia, IconButton, Skeleton, Box, Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../store/slices/postsSlice';
@@ -13,7 +13,7 @@ import { Link as RouterLink } from 'react-router-dom';
 const API_URL = process.env.REACT_APP_API_URL;
 
 const PostSkeleton = () => (
-  <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
+  <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }}>
     <CardHeader
       avatar={<Skeleton variant="circular" width={40} height={40} />}
       title={<Skeleton variant="text" width={200} />}
@@ -21,6 +21,7 @@ const PostSkeleton = () => (
     />
     <Skeleton variant="rectangular" height={194} />
     <CardContent>
+      <Skeleton variant="text" />
       <Skeleton variant="text" />
       <Skeleton variant="text" />
       <Skeleton variant="text" width="60%" />
@@ -78,10 +79,17 @@ const PostList = () => {
                       </Typography>
                     </CardContent>
                     <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between' }}>
-
                     <Button sx={{margin: 1}} variant="contained"> <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>Открыть статью</RouterLink></Button>
                       <IconButton aria-label="add to favorites">
-                        <FavoriteIcon  />
+                        <Box sx={{
+                          '&:hover': {
+                            '& .MuiSvgIcon-root': {
+                              color: 'red'
+                            }
+                          }
+                        }}>
+                          <FavoriteIcon />
+                        </Box>
                       </IconButton>
                     </CardActions>
                 </Card>

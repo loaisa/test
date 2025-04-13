@@ -11,6 +11,9 @@ import MyPostsPage from './pages/MyPostsPage';
 import { Container, CircularProgress, Box } from '@mui/material';
 import { AppDispatch, RootState } from './store/store';
 import { checkAuth } from './store/slices/authSlice';
+import CreatePost from './components/Posts/CreatePost';
+import MyProfile from './components/MyProfile';
+
 
 function App() {
 
@@ -32,6 +35,8 @@ function App() {
           <Route path="/posts/:id" element={<FullPost />} />
           <Route path="/add-post" element={<AddPost />} />
           <Route path="/my-posts" element={<MyPostsPage />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/my-profile" element={<MyProfile />} />
         </Routes>
       </Container>
     </Router>

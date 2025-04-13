@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
-import { Container, Paper, Typography, Box, Chip, Stack, CircularProgress } from "@mui/material";
-import PostList from "../components/Posts/PostList";
+import { Paper, Typography, Chip, Stack, Card, CardActions, Skeleton, CardContent, CardHeader } from "@mui/material";
 import { postApi } from "../services/api";
 
 
-    const TagsFilter = () => {
+
+const TagsSkeleton = () => (
+    <Card sx={{ width: '100%', backgroundColor: '#fff2f2'}}>
+      <CardHeader
+        title={<Skeleton variant="text" width={200} />}
+      />
+      <CardContent sx={{ display: 'flex', alignItems: 'center'}}>
+        <Skeleton sx={{ marginRight: 2 }} variant="text" width={40} height={40} />
+        <Skeleton sx={{ marginRight: 2 }} variant="text" width={40} height={40} />
+        <Skeleton sx={{ marginRight: 2 }} variant="text" width={40} height={40} />
+        <Skeleton sx={{ marginRight: 2 }} variant="text" width={40} height={40} />
+      </CardContent>
+    </Card>
+  );
+
+
+const TagsFilter = () => {
     const [tags, setTags] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +38,7 @@ import { postApi } from "../services/api";
     }, []);
 
     if (loading) {
-        return <CircularProgress />;
+        return <TagsSkeleton />;
     }
 
     return (

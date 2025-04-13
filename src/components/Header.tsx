@@ -140,6 +140,9 @@ const Header = () => {
                     if (setting === 'Мои посты') {
                       navigate('/my-posts');
                     }
+                    if (setting === 'Профиль') {
+                      navigate('/my-profile');
+                    }
                   }}
                   >{setting}</Typography>
                 </MenuItem>
