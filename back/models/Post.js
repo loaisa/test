@@ -18,6 +18,19 @@ const postSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    likesCount: {
+        type: Number,
+        default: 0,
+    },
+    likedBy: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: [],
+        ref: 'User'
+    },
+    comments: {
+        type: Array,
+        default: [],
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId, //ссылка на пользователя в базе данных
         ref: 'User', //ссылка на модель пользователя

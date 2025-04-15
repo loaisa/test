@@ -4,7 +4,7 @@ import mongoose from 'mongoose'; // импортируем для подключ
 import cors from 'cors'; // импортируем для обработки CORS
 import { registerValidation, loginValidation, postCreateValidationValidation } from './validations/validations.js' // импортируем для валидации
 import { register, login, getMe, getOneUser } from './controllers/UserController.js' // импортируем для регистрации и авторизации   
-import { createPost, getAll, getOne, remove, update, getUserPosts, getTags } from './controllers/PostController.js' // импортируем для создания, получения, удаления и обновления постов
+import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, toggleLike } from './controllers/PostController.js' // импортируем для создания, получения, удаления и обновления постов
 import checkAuth from './utils/checkAuth.js' // импортируем для проверки авторизации
 import multer from 'multer' // импортируем для загрузки изображений
 import { validationErrors } from './utils/VallidationErros.js' // импортируем для проверки валидации
@@ -60,6 +60,7 @@ app.get('/posts/tags', getTags) //получаем все теги
 app.get('/posts', getAll) //получаем все посты
 app.get('/posts/user/:id', checkAuth, getUserPosts) //получаем посты пользователя по id
 app.get('/posts/:id', getOne) //получаем один пост по id
+app.post('/posts/:id/like', checkAuth, toggleLike) //лайкаем пост по id
 app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, createPost) //проверяем авторизацию и валидацию поста, статью нельзя создать без авторизации и отправляем ошибки
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id

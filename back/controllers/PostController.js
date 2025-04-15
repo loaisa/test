@@ -44,7 +44,7 @@ export const getOne = async (req, res) => {
             { $inc: { viewsCount: 1 } }, //увеличиваем количество просмотров поста с помощью $inc
             { returnDocument: 'after' } //возвращает обновленный документ
         ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] }); // Добавляем populate для пользователя, то есть заполняем поле user в посте
-
+        
         if (!post) { //если пост не найден, возвращаем ошибку
             return res.status(404).json({
                 message: 'Пост не найден'
@@ -152,3 +152,40 @@ export const getTags = async (req, res) => {
         })
     }
 }   
+
+export const toggleLike = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const userId = req.userId; // ID пользователя из токена
+
+        // Находим пост
+        const post = await PostModel.findById(postId);
+        
+        if (!post) {
+            return res.status(404).json({
+                message: 'Пост не найден'
+            });
+        }
+
+        // Проверяем, есть ли лайк от этого пользователя
+        const hasLiked = post.likedBy && post.likedBy.includes(userId);
+
+        // Обновляем пост
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            postId,
+            {
+                $inc: { likesCount: hasLiked ? -1 : 1 },
+                [hasLiked ? '$pull' : '$addToSet']: { likedBy: userId } //$pull - удаляет элемент из массива если hasLiked true,
+                //  $addToSet - добавляет элемент в массив (если его там еще нет)
+            },
+            { new: true }
+        );
+
+        res.json(updatedPost);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Не удалось обновить лайк'
+        });
+    }
+}

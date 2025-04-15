@@ -1,10 +1,17 @@
+import { Box, Button, TextField } from "@mui/material";
+
 
 
 const CreatePost = () => {
     return (
-        <div>
-            <h1>Create Post</h1>
-        </div>
+        <Box>
+            <TextField
+                label="Title"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+            />
+        </Box>
     )
 }   
 

@@ -6,7 +6,7 @@ import CardActions from '@mui/material/CardActions';
 import { CardHeader, CardMedia, IconButton, Skeleton, Box, Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPosts } from '../../store/slices/postsSlice';
+import { fetchPosts, togglePostLike } from '../../store/slices/postsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -33,12 +33,17 @@ const PostSkeleton = () => (
 );
 
 const PostList = () => {
-    const { posts, loading } = useSelector((state: RootState) => state.posts); //получение posts и loading из store
+    const { posts, loading } = useSelector((state: RootState) => state.posts);
+    const { user } = useSelector((state: RootState) => state.auth);
 
     const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
     useEffect(() => {
         dispatch(fetchPosts()); //вызов fetchPosts
     }, []); 
+
+    const handleToggleLike = (postId: string) => {
+        dispatch(togglePostLike(postId));
+    }
 
     if (loading) {
       return (
@@ -79,18 +84,32 @@ const PostList = () => {
                       </Typography>
                     </CardContent>
                     <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Button sx={{margin: 1}} variant="contained"> <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>Открыть статью</RouterLink></Button>
-                      <IconButton aria-label="add to favorites">
-                        <Box sx={{
-                          '&:hover': {
-                            '& .MuiSvgIcon-root': {
-                              color: 'red'
+                    <Button sx={{margin: 1}} variant="contained"> 
+                      <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>
+                        Открыть статью
+                      </RouterLink>
+                    </Button>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconButton 
+                          aria-label="add to favorites" 
+                          onClick={() => handleToggleLike(post._id)}
+                          sx={{ 
+                            '&:hover': {
+                              '& .MuiSvgIcon-root': {
+                                color: 'red'
+                              }
                             }
-                          }
-                        }}>
-                          <FavoriteIcon />
-                        </Box>
-                      </IconButton>
+                          }}
+                        >
+                          <FavoriteIcon sx={{ 
+                            color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
+                            transition: 'color 0.3s ease'
+                          }} />
+                        </IconButton>
+                        <Typography variant="body2" color="text.secondary">
+                          {post.likesCount || 0}
+                        </Typography>
+                      </Box>
                     </CardActions>
                 </Card>
             ))}

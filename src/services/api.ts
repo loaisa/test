@@ -123,5 +123,21 @@ export const postApi = {
         } catch (error: any) {
             throw error;
         }
+    },
+    toggleLike: async (postId: string) => {
+        try {
+            const response = await api.post(`/posts/${postId}/like`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    getPostsByTag: async (tag: string) => {
+        try {
+            const response = await api.get(`/posts/tag/${tag}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
     }
 };
