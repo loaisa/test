@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import {postApi} from '../../services/api'
@@ -71,13 +71,17 @@ const CreatePost: React.FC = () => {
       setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
       setPreviewUrl(null);    // Сбрасываем URL превью
       setError('');          // Очищаем сообщения об ошибках
-      
+
       // Отправляем данные на сервер и ждем ответа
+
       return await dispatch(createPost(postData))
+      
     } catch (err: any) {
       // В случае ошибки показываем сообщение пользователю
       setError(err.message || 'Ошибка при создании поста');
       console.error(err);  // Логируем ошибку в консоль
+    }finally{
+      navigate('/my-posts')
     }
   };
 
