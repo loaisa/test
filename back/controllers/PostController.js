@@ -121,7 +121,6 @@ export const update = async (req, res) => { //обновляем пост по i
 export const getUserPosts = async (req, res) => {
     try {
         const userId = req.params.id //id пользователя из url
-        console.log(userId)
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({
                 message: 'Неверный ID пользователя'

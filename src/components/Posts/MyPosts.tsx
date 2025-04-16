@@ -3,24 +3,13 @@ import { AppDispatch, RootState } from "../../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { postApi } from "../../services/api";
-import { Card, CardContent, CardHeader, CardMedia, Box, CircularProgress, CardActions, IconButton, Link, Button } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import { Navigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardMedia, Box,  CardActions, IconButton, Button } from "@mui/material";
 import { Link as RouterLink } from 'react-router-dom';
 import { deletePost } from "../../store/slices/postsSlice";
+import { Post } from "../../types/types";
 const API_URL = process.env.REACT_APP_API_URL;
 
-interface Post {
-  _id: string;
-  title: string;
-  text: string;
-  imageUrl: string;
-  createdAt: string;
-  viewsCount: number;
-  user: {
-    fullName: string;
-  };
-}
+
 
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
@@ -72,10 +61,10 @@ const MyPosts = () => {
   }
 
   return (
-    <Box sx={{ width: '90%' }}>
+    <Box sx={{ width: '90%'}}>
       <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success"> <RouterLink to="/create-post" style={{textDecoration: 'none', color: 'white'}}>Создать пост</RouterLink></Button>
       {posts.length > 0 ? posts.map((post) => (
-        <Card sx={{ width: '100%', margin: 4, gap: 4 }} key={post._id}>
+        <Card sx={{ width: '100%', margin: 4, gap: 4, backgroundColor: '#fff2f2' }} key={post._id}>
           <CardHeader
 
             title={post.title}
@@ -101,12 +90,9 @@ const MyPosts = () => {
               Просмотры: {post.viewsCount}
             </Typography>
           </CardContent>
-          <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between' }}>
-           
-            <IconButton aria-label="add to favorites">
-              <FavoriteIcon />
-            </IconButton>
-          </CardActions>
+          <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+              Кол-во лайков: {post.likesCount}
+            </Typography>
           <Box sx={{margin: 2}}>
             <Button sx={{margin: 1}} variant="contained" color="error" onClick={() => handleDelete(post._id)}>Удалить</Button>
             <Button sx={{margin: 1}} variant="contained" color="success">Редактировать</Button>

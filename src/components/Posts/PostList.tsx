@@ -83,7 +83,7 @@ const PostList = () => {
                         Просмотры: {post.viewsCount}
                       </Typography>
                     </CardContent>
-                    <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'end' }}>
                     <Button sx={{margin: 1}} variant="contained"> 
                       <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>
                         Открыть статью

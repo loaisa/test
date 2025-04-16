@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CreatePostData } from '../types/types';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -68,9 +69,9 @@ export const authApi = {
 };
 
 export const postApi = {
-    createPost: async (title: string, content: string) => {
+    createPost: async (data: CreatePostData) => {
         try {
-            const response = await api.post('/posts', { title, content });
+            const response = await api.post('/posts', data);
             return response.data;
         } catch (error: any) {
             throw error;
@@ -135,6 +136,22 @@ export const postApi = {
     getPostsByTag: async (tag: string) => {
         try {
             const response = await api.get(`/posts/tag/${tag}`);
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    uploadImage: async (formData: FormData) => {
+        try {
+            const response = await api.post(`/uploads`, formData)
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
+    deleteImage: async (filename: string) => {
+        try {
+            const response = await api.delete(`/uploads/${filename}`);
             return response.data;
         } catch (error: any) {
             throw error;

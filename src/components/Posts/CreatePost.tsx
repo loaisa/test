@@ -1,18 +1,296 @@
-import { Box, Button, TextField } from "@mui/material";
+import React, { useEffect, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import {postApi} from '../../services/api'
+import { AppDispatch} from '../../store/store';
+
+import { 
+  TextField, 
+  Button, 
+  Box, 
+  Typography, 
+  Paper,
+  IconButton,
+  styled
+} from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { createPost } from '../../store/slices/postsSlice';
+import { useNavigate } from 'react-router-dom';
+
+// Стилизованный компонент для input type="file"
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+  });
+
+const CreatePost: React.FC = () => {
+
+  const [error, setError] = useState('')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
 
+  const navigate = useNavigate();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Добавляем состояние для хранения URL загруженного изображения
+  const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
 
-const CreatePost = () => {
-    return (
-        <Box>
+  const { control, handleSubmit, formState: { errors }, setValue } = useForm({
+    defaultValues: {
+      title: '',
+      text: '',
+      tags: '',
+      imageUrl: ''
+    }
+  });
+  
+
+
+  // Основная функция отправки формы
+  const onSubmit = async (data:any) => {
+    try {
+      // Формируем объект данных поста
+      const postData = {
+        title: data.title,  // Заголовок поста
+        text: data.text,    // Текст поста
+        tags: data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),   // Преобразуем строку тегов в массив, удаляем пробелы и пустые значения
+        imageUrl: uploadedImageUrl || data.imageUrl  // URL изображения (если есть загруженное изображение, используем его, иначе берем из формы)
+      };
+      
+      console.log('Post data:', postData);  // Логируем данные для отладки
+      
+      // Очищаем форму перед отправкой
+      setValue('title', '');  // Очищаем поле заголовка
+      setValue('text', '');   // Очищаем поле текста
+      setValue('tags', '');   // Очищаем поле тегов
+      setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
+      setPreviewUrl(null);    // Сбрасываем URL превью
+      setError('');          // Очищаем сообщения об ошибках
+      
+      // Отправляем данные на сервер и ждем ответа
+      return await dispatch(createPost(postData))
+    } catch (err: any) {
+      // В случае ошибки показываем сообщение пользователю
+      setError(err.message || 'Ошибка при создании поста');
+      console.error(err);  // Логируем ошибку в консоль
+    }
+  };
+
+  // Функция загрузки изображения на сервер
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData();  // Создаем объект FormData для отправки файла
+    formData.append('image', file);   // Добавляем файл в FormData
+    
+    try {
+      const token = localStorage.getItem('token');  // Получаем токен авторизации
+      if (!token) {
+        throw new Error('Необходима авторизация для загрузки изображений');
+      }
+      
+      // Отправляем изображение на сервер
+      const response = await postApi.uploadImage(formData);
+      console.log('Upload response:', response);  // Логируем ответ сервера
+      
+      if (response && response.url) {
+        // Если загрузка успешна, сохраняем URL изображения
+        setUploadedImageUrl(response.url);
+        setValue('imageUrl', response.url);
+        return response.url;
+      } else {
+        throw new Error('Неверный формат ответа от сервера');
+      }
+    } catch (err: any) {
+      console.error('Error uploading image:', err);
+      setError(err.message || 'Ошибка при загрузке изображения');
+      throw err;
+    }
+  };
+
+  // Обработчик изменения выбранного изображения
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      
+      // Проверка типа файла
+      if (!file.type.startsWith('image/')) {
+        setError('Пожалуйста, выберите файл изображения');
+        return;
+      }
+
+      // Проверка размера файла (10MB = 10 * 1024 * 1024 bytes)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError('Размер файла не должен превышать 10MB');
+        return;
+      }
+
+      const fileUrl = URL.createObjectURL(file);  // Создаем временный URL для превью
+      setPreviewUrl(fileUrl);  // Устанавливаем URL превью
+      try {
+        // Загружаем изображение на сервер
+        await handleImageUpload(file);
+      } catch (err:any) {
+        setError(err.message);  // Показываем ошибку пользователю
+      }
+    }
+  };
+
+  // Функция удаления загруженного изображения
+  const handleDeleteImage = async () => {
+    if (!uploadedImageUrl) return;  // Если нет загруженного изображения, выходим
+
+    try {
+      // Извлекаем имя файла из URL
+      const filename = uploadedImageUrl.split('/uploads/').pop();
+      if (!filename) {
+        throw new Error('Неверный формат URL изображения');
+      }
+
+      // Удаляем изображение с сервера
+      await postApi.deleteImage(filename);
+      
+      // Очищаем состояния
+      setPreviewUrl(null);  // Удаляем превью
+      setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
+      setValue('imageUrl', '');  // Очищаем поле URL изображения в форме
+      setError('');  // Очищаем сообщения об ошибках
+    } catch (err: any) {
+      console.error('Error deleting image:', err);
+      setError(err.message || 'Ошибка при удалении изображения');
+    }
+  };
+
+  return (
+    <Paper elevation={3} sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4 }}>
+      <Typography variant="h5" component="h1" gutterBottom>
+        Создать пост
+      </Typography>
+
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Controller
+          name="title"
+          control={control}
+          rules={{ required: 'Заголовок обязателен' }}
+          render={({ field }) => (
             <TextField
-                label="Title"
-                variant="outlined"
-                fullWidth
-                margin="normal"
+              {...field}
+              label="Заголовок"
+              fullWidth
+              margin="normal"
+              error={!!errors.title}
+              helperText={errors.title?.message}
             />
+          )}
+        />
+
+        <Controller
+          name="text"
+          control={control}
+          rules={{ required: 'Текст поста обязателен' }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Текст поста"
+              multiline
+              rows={4}
+              fullWidth
+              margin="normal"
+              error={!!errors.text}
+              helperText={errors.text?.message}
+            />
+          )}
+        />
+
+        <Controller
+          name="tags"
+          control={control}
+          rules={{ required: 'Теги обязательны' }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Теги (через запятую)"
+              fullWidth
+              margin="normal"
+              error={!!errors.tags}
+              helperText={errors.tags?.message}
+            />
+          )}
+        />
+
+
+    <Box sx={{ mt: 2, mb: 2 }}>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Загрузить изображение
+            <VisuallyHiddenInput
+              type="file"
+              onChange={handleImageChange}
+              accept="image/*"
+            />
+          </Button>
+          
+          {previewUrl && (
+            <Box sx={{ mt: 2, position: 'relative' }}>
+              <img 
+                src={previewUrl} 
+                alt="Preview" 
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '200px', 
+                  objectFit: 'contain' 
+                }} 
+              />
+              <IconButton
+                sx={{ 
+                  position: 'absolute', 
+                  top: 8, 
+                  right: 8,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                  }
+                }}
+                onClick={handleDeleteImage}
+              >
+                X
+              </IconButton>
+            </Box>
+          )}
+          </Box>  
+
+        {error && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
+        )}
+
+        <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+
+          >
+            Создать пост
+          </Button>
+          <Button
+            variant="outlined"
+          >
+            Отмена
+          </Button>
         </Box>
-    )
-}   
+      </Box>
+    </Paper>
+  );
+};
 
 export default CreatePost;

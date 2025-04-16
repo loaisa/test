@@ -8,7 +8,14 @@ import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, togg
 import checkAuth from './utils/checkAuth.js' // импортируем для проверки авторизации
 import multer from 'multer' // импортируем для загрузки изображений
 import { validationErrors } from './utils/VallidationErros.js' // импортируем для проверки валидации
+import path from 'path'; // импортируем для работы с путями
+import fs from 'fs'; // импортируем для работы с файлами
+import { fileURLToPath } from 'url';
+
 const app = express(); //создали сервер
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename); //для работы с путями в ES модулях
 
 mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
@@ -33,21 +40,43 @@ app.use(cors({
 const upload = multer({ 
     storage: multer.diskStorage({ //конфигурация для multer
         destination: (_, __, cb) => { //куда будем сохранять файлы
-            cb(null, 'uploads') }, //путь к папке
-            filename: (_, file, cb) => { //как будем называть файл      
-                cb(null, file.originalname) //название файла
-            }
-        })
+            cb(null, 'uploads'); //путь к папке
+        },
+        filename: (_, file, cb) => { //как будем называть файл      
+            cb(null, file.originalname); //название файла
+        }
     })
+});
 
 app.use(express.json()); //Сделали так, чтобы можно было принимать json в запросах
 app.use('/uploads', express.static('uploads'))  //если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
 app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //загружаем изображение и сохраняем его в папку uploads
+    if (!req.file) {
+        return res.status(400).json({ message: 'Файл не загружен' });
+    }
     res.json({
         url: `/uploads/${req.file.originalname}` //возвращаем url изображения
-    })
+    });
 }) 
+// Эндпоинт для удаления изображения
+app.delete('/uploads/:filename', checkAuth, (req, res) => {
+    try {
+      const filePath = path.join(__dirname, 'uploads', req.params.filename);
+      
+      // Проверяем существование файла
+      if (fs.existsSync(filePath)) {
+        // Удаляем файл
+        fs.unlinkSync(filePath);
+        res.json({ message: 'Файл успешно удален' });
+      } else {
+        res.status(404).json({ message: 'Файл не найден' });
+      }
+    } catch (err) {
+      console.error('Error deleting file:', err);
+      res.status(500).json({ message: 'Ошибка при удалении файла' });
+    }
+  });
 
 // если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
