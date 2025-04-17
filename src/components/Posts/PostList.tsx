@@ -45,6 +45,10 @@ const PostList = () => {
         dispatch(togglePostLike(postId));
     }
 
+    // Добавляем сортировку постов
+    const sortedPosts = [...posts].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
     if (loading) {
       return (
         <Box sx={{ width: '100%' }}>
@@ -57,7 +61,7 @@ const PostList = () => {
 
     return (
         <Box sx={{ width: '100%'}}>
-            {posts.map((post) => (
+            {sortedPosts.map((post) => (
               <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }} key={post._id}>
                     <CardHeader
                       title={post.title}

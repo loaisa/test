@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import {postApi} from '../../services/api'
@@ -61,23 +61,35 @@ const CreatePost: React.FC = () => {
         tags: data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),   // Преобразуем строку тегов в массив, удаляем пробелы и пустые значения
         imageUrl: uploadedImageUrl || data.imageUrl  // URL изображения (если есть загруженное изображение, используем его, иначе берем из формы)
       };
+
+      // Проверяем наличие изображения
+      if (!postData.imageUrl) {
+        setError('Пожалуйста, загрузите изображение');
+        return; // Прерываем выполнение функции
+      }
+
+      const response = await dispatch(createPost(postData));
       
-      console.log('Post data:', postData);  // Логируем данные для отладки
-      
-      // Очищаем форму перед отправкой
-      setValue('title', '');  // Очищаем поле заголовка
-      setValue('text', '');   // Очищаем поле текста
-      setValue('tags', '');   // Очищаем поле тегов
-      setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
-      setPreviewUrl(null);    // Сбрасываем URL превью
-      setError('');          // Очищаем сообщения об ошибках
-      
-      // Отправляем данные на сервер и ждем ответа
-      return await dispatch(createPost(postData))
+      // Проверка на rejected status
+      if (response.meta.requestStatus === 'rejected') {
+        setError((response.payload as any)?.message || 'Ошибка при создании поста');
+        return;
+      }
+
+      // Очищаем форму только при успешном создании
+      setValue('title', '');
+      setValue('text', '');
+      setValue('tags', '');
+      setUploadedImageUrl(null);
+      setPreviewUrl(null);
+      setError('');
+
+      // Перенаправляем только при успешном создании
+      navigate('/my-posts');
+
     } catch (err: any) {
-      // В случае ошибки показываем сообщение пользователю
       setError(err.message || 'Ошибка при создании поста');
-      console.error(err);  // Логируем ошибку в консоль
+      console.error(err);
     }
   };
 
@@ -87,10 +99,6 @@ const CreatePost: React.FC = () => {
     formData.append('image', file);   // Добавляем файл в FormData
     
     try {
-      const token = localStorage.getItem('token');  // Получаем токен авторизации
-      if (!token) {
-        throw new Error('Необходима авторизация для загрузки изображений');
-      }
       
       // Отправляем изображение на сервер
       const response = await postApi.uploadImage(formData);
@@ -113,7 +121,7 @@ const CreatePost: React.FC = () => {
 
   // Обработчик изменения выбранного изображения
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
+    if (event.target.files && event.target.files[0]) { // Проверяем, есть ли файлы в input
       const file = event.target.files[0];
       
       // Проверка типа файла
@@ -253,6 +261,8 @@ const CreatePost: React.FC = () => {
                   position: 'absolute', 
                   top: 8, 
                   right: 8,
+                  height: '25px',
+                  width:'25px',
                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                   color: 'white',
                   '&:hover': {
@@ -282,8 +292,9 @@ const CreatePost: React.FC = () => {
           >
             Создать пост
           </Button>
-          <Button
+          <Button 
             variant="outlined"
+            onClick={() => navigate('/my-posts')}
           >
             Отмена
           </Button>

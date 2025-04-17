@@ -6,9 +6,9 @@ interface ProtectedRouteProps {
     children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const { isAuth } = useSelector((state: RootState) => state.auth);
-    const location = useLocation();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => { // Проверяет авторизацию пользователя
+    const { isAuth } = useSelector((state: RootState) => state.auth); // Получаем состояние авторизации из Redux
+    const location = useLocation(); // Получаем текущий путь
 
     if (!isAuth) {
         // Сохраняем текущий путь, чтобы вернуться после авторизации

@@ -35,7 +35,7 @@ const initialState: AuthState = {
     token: null,
     loading: false,
     error: null,
-    isAuth: false,
+    isAuth: localStorage.getItem('isAuth') === 'true' ? true : false,
 }
 
 const authSlice = createSlice({
@@ -47,29 +47,31 @@ const authSlice = createSlice({
             state.token = null; //удаляем токен из state
             state.isAuth = false; //удаляем isAuth из state
             localStorage.removeItem('token'); //удаляем токен из localStorage
+            localStorage.removeItem('isAuth');
         }
     },
     extraReducers: (builder) => {
         builder.addCase(fetchLogin.pending, (state) => { //если запрос выполняется
             state.loading = true; //устанавливаем loading в true
         })
-        builder.addCase(fetchLogin.fulfilled, (state, action) => {   //если запрос выполнен успешно
+        .addCase(fetchLogin.fulfilled, (state, action) => {   //если запрос выполнен успешно
             state.token = action.payload.token; //сохраняем токен в state
-            localStorage.setItem('token', action.payload.token) 
+            localStorage.setItem('token', action.payload.token)
+            localStorage.setItem('isAuth', 'true') 
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
             state.user = action.payload; //сохраняем пользователя в state
         })
-        builder.addCase(fetchLogin.rejected, (state, action) => { //если запрос выполнен с ошибкой
+        .addCase(fetchLogin.rejected, (state, action) => { //если запрос выполнен с ошибкой
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })  
 
 
-        builder.addCase(fetchRegister.pending, (state) => { //если запрос выполняется
+        .addCase(fetchRegister.pending, (state) => { //если запрос выполняется
         state.loading = true; //устанавливаем loading в true
         })
-        builder.addCase(fetchRegister.fulfilled, (state, action) => { //если запрос выполнен успешно
+        .addCase(fetchRegister.fulfilled, (state, action) => { //если запрос выполнен успешно
             state.token = action.payload.token; //сохраняем токен в state
             localStorage.setItem('token', action.payload.token)
             state.isAuth = true; //устанавливаем isAuth в true
@@ -77,22 +79,22 @@ const authSlice = createSlice({
             state.user = action.payload; //сохраняем весь payload в sate.user
             console.log(action.payload)
         })
-        builder.addCase(fetchRegister.rejected, (state, action) => { //если запрос выполнен с ошибкой    
+        .addCase(fetchRegister.rejected, (state, action) => { //если запрос выполнен с ошибкой    
             state.error = action.error.message || null; //сохраняем ошибку в state
             state.loading = false; //устанавливаем loading в false
         })
 
 
-        builder.addCase(checkAuth.pending, (state) => { //если запрос выполняется
+        .addCase(checkAuth.pending, (state) => { //если запрос выполняется
             state.loading = true;
-        });
-        builder.addCase(checkAuth.fulfilled, (state, action) => { //если запрос выполнен успешно
+        })
+        .addCase(checkAuth.fulfilled, (state, action) => { //если запрос выполнен успешно
             state.user = action.payload.user; //сохраняем пользователя в state
             state.token = action.payload.token; //сохраняем токен в state
             state.isAuth = true; //устанавливаем isAuth в true
             state.loading = false; //устанавливаем loading в false
-        });
-        builder.addCase(checkAuth.rejected, (state) => { //если запрос выполнен с ошибкой
+        })
+        .addCase(checkAuth.rejected, (state) => { //если запрос выполнен с ошибкой
             state.user = null;
             state.token = null;
             state.isAuth = false;

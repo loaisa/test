@@ -15,7 +15,7 @@ interface PostsState {
 
 // Начальное состояние
 const initialState: PostsState = {
-  posts: [],
+  posts: Array.isArray(JSON.parse(localStorage.getItem('posts') || '[]')) ? JSON.parse(localStorage.getItem('posts') || '[]') : [], //Проверяем, является ли posts массивом
   loading: false,
   error: null,
 };
@@ -30,14 +30,18 @@ export const deletePost = createAsyncThunk('posts/deletePost', async (id: string
   return response;
 });
 
-export const fetchOnePost = createAsyncThunk('posts/fetchOnePosts', async (id: string) => {  //получение одного поста по id
-  const response = await postApi.getOnePost(id);
-  return response;
+export const fetchOnePost = createAsyncThunk('posts/fetchOnePost', async (id: string) => {  //получение одного поста по id
+  try {
+    const response = await postApi.getOnePost(id);
+    return response;
+  } catch (error) {
+    console.error('Error fetching post:', error);
+    throw error; // Пробрасываем ошибку, чтобы она была обработана в редюсере
+  }
 });
 
 export const createPost = createAsyncThunk('post/createPost', async (data: CreatePostData) => {
   const response = await postApi.createPost(data)
-  console.log(response)
   return response
 })
 
@@ -59,21 +63,27 @@ const postsSlice = createSlice({
     builder
       .addCase(fetchPosts.pending, (state) => { //если запрос выполняется
         state.loading = true; //устанавливаем loading в true
-      });
-    builder.addCase(fetchPosts.fulfilled, (state, action) => { //если запрос выполнен успешно
-      state.posts = action.payload; //сохраняем посты в state
-      state.loading = false; //устанавливаем loading в false
-    })
-    builder.addCase(fetchPosts.rejected, (state, action) => { //если запрос выполнен с ошибкой
-      state.error = action.error.message || null; //сохраняем ошибку в state
-      state.loading = false; //устанавливаем loading в false
-    })
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => { //если запрос выполнен успешно
+        state.posts = action.payload; //сохраняем посты в state
+        state.loading = false; //устанавливаем loading в false
+        localStorage.setItem('posts', JSON.stringify(state.posts)); //сохраняем посты в localStorage
+      })
+      .addCase(fetchPosts.rejected, (state, action) => { //если запрос выполнен с ошибкой
+        state.error = action.error.message || null; //сохраняем ошибку в state
+        state.loading = false; //устанавливаем loading в false
+      })
       .addCase(fetchOnePost.pending, (state) => {
         state.loading = true
       })
       .addCase(fetchOnePost.fulfilled, (state, action) => { //получаем пост если выполнено успешно
-        state.posts = action.payload
-        state.loading = false
+        const existingPostIndex = state.posts.findIndex(post => post._id === action.payload._id); 
+      if (existingPostIndex >= 0) {
+        state.posts[existingPostIndex] = action.payload; // Обновляем существующий пост
+      } else {
+        state.posts.push(action.payload); // Добавляем новый пост
+      }
+      state.loading = false;
       })
       .addCase(fetchOnePost.rejected, (state, action) => {
         state.error = action.error.message || null
@@ -102,23 +112,23 @@ const postsSlice = createSlice({
         }
       })
       // Обработка ошибки при переключении лайка
-      .addCase(togglePostLike.rejected, (state, action) => {
-        state.error = action.error.message || 'Ошибка';
-        state.loading = false;
+      .addCase(togglePostLike.rejected, (state, action) => { //если запрос выполнен с ошибкой
+        state.error = action.error.message || 'Ошибка'; //сохраняем ошибку в state
+        state.loading = false; //устанавливаем loading в false
       })
       // Создание пооста
-      .addCase(createPost.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(createPost.pending, (state) => { //если запрос выполняется
+        state.loading = true; //устанавливаем loading в true
+        state.error = null; //устанавливаем error в null
       })
-      .addCase(createPost.fulfilled, (state, action) => {
-        state.posts.unshift(action.payload);
-        state.loading = false;
-        state.error = null;
+      .addCase(createPost.fulfilled, (state, action) => { //если запрос выполнен успешно
+        state.posts.unshift(action.payload); //добавляем пост в начало массива
+        state.loading = false; //устанавливаем loading в false
+        state.error = null; //устанавливаем error в null
       })
-      .addCase(createPost.rejected, (state, action) => {
-        state.error = action.error.message || 'Ошибка при создании поста';
-        state.loading = false;
+      .addCase(createPost.rejected, (state, action) => { //если запрос выполнен с ошибкой
+        state.error = action.error.message || 'Ошибка при создании поста'; //сохраняем ошибку в state
+        state.loading = false; //устанавливаем loading в false
       })
 
   },

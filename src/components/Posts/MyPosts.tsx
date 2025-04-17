@@ -11,30 +11,34 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 
 
-const PostSkeleton = () => (
-  <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
-    <CardHeader
-      avatar={<Skeleton variant="circular" width={40} height={40} />}
-      title={<Skeleton variant="text" width={200} />}
-      subheader={<Skeleton variant="text" width={140} />}
-    />
-    <Skeleton variant="rectangular" height={194} />
-    <CardContent>
-      <Skeleton variant="text" />
-      <Skeleton variant="text" />
-      <Skeleton variant="text" width="60%" />
-    </CardContent>
-    <CardActions disableSpacing>
-      <Skeleton variant="circular" width={30} height={30} />
-    </CardActions>
-  </Card>
-);
+// const PostSkeleton = () => (
+//   <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
+//     <CardHeader
+//       avatar={<Skeleton variant="circular" width={40} height={40} />}
+//       title={<Skeleton variant="text" width={200} />}
+//       subheader={<Skeleton variant="text" width={140} />}
+//     />
+//     <Skeleton variant="rectangular" height={194} />
+//     <CardContent>
+//       <Skeleton variant="text" />
+//       <Skeleton variant="text" />
+//       <Skeleton variant="text" width="60%" />
+//     </CardContent>
+//     <CardActions disableSpacing>
+//       <Skeleton variant="circular" width={30} height={30} />
+//     </CardActions>
+//   </Card>
+// );
 
 const MyPosts = () => {
   const { isAuth, user } = useSelector((state: RootState) => state.auth);
   const [posts, setPosts] = useState<Post[]>([]);
   const dispatch = useDispatch<AppDispatch>();
 
+      // Добавляем сортировку постов
+  const sortedPosts = [...posts].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   useEffect(() => {
     const getUserPosts = async () => {
@@ -46,7 +50,7 @@ const MyPosts = () => {
       }
     }
     getUserPosts();
-  }, [isAuth, user]);
+  }, [isAuth, user, dispatch]);
 
 
   const handleDelete = (id: string) => {
@@ -63,7 +67,7 @@ const MyPosts = () => {
   return (
     <Box sx={{ width: '90%'}}>
       <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success"> <RouterLink to="/create-post" style={{textDecoration: 'none', color: 'white'}}>Создать пост</RouterLink></Button>
-      {posts.length > 0 ? posts.map((post) => (
+      {sortedPosts.length > 0 ? sortedPosts.map((post) => (
         <Card sx={{ width: '100%', margin: 4, gap: 4, backgroundColor: '#fff2f2' }} key={post._id}>
           <CardHeader
 

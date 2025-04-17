@@ -6,40 +6,28 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchOnePost, togglePostLike } from "../../store/slices/postsSlice";
+import { Post } from "../../types/types";
+import React from "react";
 
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const FullPost = () => {
+const FullPost = React.memo(() => {
     const { id } = useParams<string>();
-    const post = useSelector((state: RootState) =>
-      state.posts.posts.find((p) => p._id === id)
-    );
-    const [loading, setLoading] = useState(true);
+    const posts = useSelector((state: RootState) => state.posts.posts);
+    const loading = useSelector((state: RootState) => state.posts.loading)
     const [error, setError] = useState<string | null>(null);
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     
+
     useEffect(() => {
-      const fetchPost = async () => {
-        try {
-          if (!id) {
-            setError('ID поста не найден');
-            return;
-          }
-          setLoading(true);
-          // Если поста нет в сторе — грузим его
-          if (!post) {
-            await dispatch(fetchOnePost(id)); // реализуйте такой экшен, если нужно
-          }
-        } catch (error) {
-          setError('Не удалось загрузить пост');
-        } finally {
-          setLoading(false);
+        if (id) {
+            dispatch(fetchOnePost(id)); // Диспатчим экшен для получения поста
         }
-      };
-      fetchPost();
-    }, [id, dispatch]);
+    }, [id, dispatch,]);
+
+    const post = posts.find((p) => p._id === id); // Проверяем, что posts определен
 
     const handleToggleLike = (postId: string) => {
         dispatch(togglePostLike(postId));
@@ -68,7 +56,6 @@ const FullPost = () => {
             </Box>
         );
     }
-
     return (
         <Container maxWidth="md" sx={{ mt: 10 }}>
             <Card sx={{ padding: 2, backgroundColor: '#fff2f2'}}>
@@ -118,6 +105,6 @@ const FullPost = () => {
             </Card>
         </Container>
     );
-}
+})
 
 export default FullPost;
