@@ -4,6 +4,7 @@
 /node_modules
 /uploads
 /back/node_modules
+/back/uploads
 /.pnp
 .pnp.js
 .env

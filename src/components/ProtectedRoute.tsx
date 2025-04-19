@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => { // П�
 
     if (!isAuth) {
         // Сохраняем текущий путь, чтобы вернуться после авторизации
-        return <Navigate to="/" state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     return <>{children}</>;

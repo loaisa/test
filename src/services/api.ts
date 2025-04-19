@@ -93,9 +93,9 @@ export const postApi = {
             throw error;
         }
     },
-    updatePost: async (id: string, title: string, content: string) => {
+    updatePost: async (id:string,data: CreatePostData) => {
         try {
-            const response = await api.put(`/posts/${id}`, { title, content });
+            const response = await api.patch(`/posts/${id}`, data);
             return response.data;
         } catch (error: any) {
             throw error;

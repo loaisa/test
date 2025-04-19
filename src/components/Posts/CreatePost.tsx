@@ -1,41 +1,43 @@
-import React, { useState } from 'react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import {postApi} from '../../services/api'
-import { AppDispatch} from '../../store/store';
-
-import { 
-  TextField, 
-  Button, 
-  Box, 
-  Typography, 
+import { postApi } from '../../services/api'
+import { AppDispatch } from '../../store/store';
+import { fetchOnePost, updatePost } from "../../store/slices/postsSlice";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
   Paper,
   IconButton,
   styled
 } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { createPost } from '../../store/slices/postsSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Стилизованный компонент для input type="file"
 const VisuallyHiddenInput = styled('input')({
-    clip: 'rect(0 0 0 0)',
-    clipPath: 'inset(50%)',
-    height: 1,
-    overflow: 'hidden',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    whiteSpace: 'nowrap',
-    width: 1,
-  });
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const CreatePost: React.FC = () => {
 
+  const { id } = useParams()
   const [error, setError] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
+  const isEdit = Boolean (id)
 
   const navigate = useNavigate();
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Добавляем состояние для хранения URL загруженного изображения
@@ -49,11 +51,11 @@ const CreatePost: React.FC = () => {
       imageUrl: ''
     }
   });
-  
+
 
 
   // Основная функция отправки формы
-  const onSubmit = async (data:any) => {
+  const onSubmit = async (data: any) => {
     try {
       // Формируем объект данных поста
       const postData = {
@@ -69,8 +71,8 @@ const CreatePost: React.FC = () => {
         return; // Прерываем выполнение функции
       }
 
-      const response = await dispatch(createPost(postData));
-      
+      const response = isEdit && id ? await dispatch(updatePost({id, data: postData })) : await dispatch(createPost(postData));
+
       // Проверка на rejected status
       if (response.meta.requestStatus === 'rejected') {
         setError((response.payload as any)?.message || 'Ошибка при создании поста');
@@ -98,16 +100,17 @@ const CreatePost: React.FC = () => {
   const handleImageUpload = async (file: File) => {
     const formData = new FormData();  // Создаем объект FormData для отправки файла
     formData.append('image', file);   // Добавляем файл в FormData
-    
+
     try {
-      
+
       // Отправляем изображение на сервер
       const response = await postApi.uploadImage(formData);
-      console.log('Upload response:', response);  // Логируем ответ сервера
-      
+    
+
       if (response && response.url) {
         // Если загрузка успешна, сохраняем URL изображения
         setUploadedImageUrl(response.url);
+        console.log(response.url)
         setValue('imageUrl', response.url);
         return response.url;
       } else {
@@ -124,7 +127,7 @@ const CreatePost: React.FC = () => {
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) { // Проверяем, есть ли файлы в input
       const file = event.target.files[0];
-      
+
       // Проверка типа файла
       if (!file.type.startsWith('image/')) {
         setError('Пожалуйста, выберите файл изображения');
@@ -143,7 +146,7 @@ const CreatePost: React.FC = () => {
       try {
         // Загружаем изображение на сервер
         await handleImageUpload(file);
-      } catch (err:any) {
+      } catch (err: any) {
         setError(err.message);  // Показываем ошибку пользователю
       }
     }
@@ -162,7 +165,7 @@ const CreatePost: React.FC = () => {
 
       // Удаляем изображение с сервера
       await postApi.deleteImage(filename);
-      
+
       // Очищаем состояния
       setPreviewUrl(null);  // Удаляем превью
       setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
@@ -173,6 +176,25 @@ const CreatePost: React.FC = () => {
       setError(err.message || 'Ошибка при удалении изображения');
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      const getPost = async () => {
+        try {
+          const post = await dispatch(fetchOnePost(id))
+          setValue('title', post.payload.title)
+          setValue('text', post.payload.text)
+          setValue('tags', post.payload.tags.join(', '))
+          setPreviewUrl(`${API_URL}${post.payload.imageUrl}`)
+          setUploadedImageUrl(post.payload.imageUrl) 
+        } catch (err: any) {
+          console.error('Ошибка полуения поста:', err);
+        }
+      }
+      getPost()
+    }
+  }, [id, dispatch])
+
 
   return (
     <Paper elevation={3} sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 4 }}>
@@ -232,7 +254,7 @@ const CreatePost: React.FC = () => {
         />
 
 
-    <Box sx={{ mt: 2, mb: 2 }}>
+        <Box sx={{ mt: 2, mb: 2 }}>
           <Button
             component="label"
             variant="contained"
@@ -245,25 +267,25 @@ const CreatePost: React.FC = () => {
               accept="image/*"
             />
           </Button>
-          
+
           {previewUrl && (
             <Box sx={{ mt: 2, position: 'relative' }}>
-              <img 
-                src={previewUrl} 
-                alt="Preview" 
-                style={{ 
-                  maxWidth: '100%', 
-                  maxHeight: '200px', 
-                  objectFit: 'contain' 
-                }} 
+              <img
+                src={previewUrl}
+                alt="Preview"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '200px',
+                  objectFit: 'contain'
+                }}
               />
               <IconButton
-                sx={{ 
-                  position: 'absolute', 
-                  top: 8, 
+                sx={{
+                  position: 'absolute',
+                  top: 8,
                   right: 8,
                   height: '25px',
-                  width:'25px',
+                  width: '25px',
                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                   color: 'white',
                   '&:hover': {
@@ -276,7 +298,7 @@ const CreatePost: React.FC = () => {
               </IconButton>
             </Box>
           )}
-          </Box>  
+        </Box>
 
         {error && (
           <Typography color="error" sx={{ mt: 2 }}>
@@ -291,9 +313,9 @@ const CreatePost: React.FC = () => {
             color="primary"
 
           >
-            Создать пост
+            {isEdit ? 'Сохранить' : 'Создать пост'}
           </Button>
-          <Button 
+          <Button
             variant="outlined"
             onClick={() => navigate('/my-posts')}
           >

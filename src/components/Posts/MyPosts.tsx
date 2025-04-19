@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { postApi } from "../../services/api";
 import { Card, CardContent, CardHeader, CardMedia, Box,  CardActions, IconButton, Button } from "@mui/material";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { deletePost } from "../../store/slices/postsSlice";
 import { Post } from "../../types/types";
 const API_URL = process.env.REACT_APP_API_URL;
@@ -34,6 +34,7 @@ const MyPosts = () => {
   const { isAuth, user } = useSelector((state: RootState) => state.auth);
   const [posts, setPosts] = useState<Post[]>([]);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate()
 
       // Добавляем сортировку постов
   const sortedPosts = [...posts].sort((a, b) => 
@@ -91,6 +92,10 @@ const MyPosts = () => {
               Автор: {post.user.fullName}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+              Тэги: {post.tags.join(',')}
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
               Просмотры: {post.viewsCount}
             </Typography>
           </CardContent>
@@ -99,7 +104,7 @@ const MyPosts = () => {
             </Typography>
           <Box sx={{margin: 2}}>
             <Button sx={{margin: 1}} variant="contained" color="error" onClick={() => handleDelete(post._id)}>Удалить</Button>
-            <Button sx={{margin: 1}} variant="contained" color="success">Редактировать</Button>
+            <Button sx={{margin: 1}} variant="contained" color="success" onClick={()=> navigate(`/create-post/${post._id}/edit`)}>Редактировать</Button>
             <Button sx={{margin: 1}} variant="contained"> <RouterLink to={`/posts/${post._id}`} style={{textDecoration: 'none', color: 'white'}}>Открыть статью</RouterLink></Button>
           </Box> 
         </Card>

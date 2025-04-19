@@ -44,6 +44,11 @@ function App() {
               <CreatePost />
             </ProtectedRoute>
           } />
+          <Route path="/create-post/:id/edit" element={
+            <ProtectedRoute>
+              <CreatePost />
+            </ProtectedRoute>
+          } />
           <Route path="/my-profile" element={
             <ProtectedRoute>
               <MyProfile />

@@ -15,7 +15,14 @@ interface PostsState {
 
 // Начальное состояние
 const initialState: PostsState = {
-  posts: Array.isArray(JSON.parse(localStorage.getItem('posts') || '[]')) ? JSON.parse(localStorage.getItem('posts') || '[]') : [], //Проверяем, является ли posts массивом
+  posts: (() => {
+    try { //проверяем, является ли posts массивом
+      const parsedPosts = JSON.parse(localStorage.getItem('posts') || '[]'); //парсим posts из localStorage
+      return Array.isArray(parsedPosts) ? parsedPosts : []; //если является, то возвращаем его, если нет, то возвращаем пустой массив
+    } catch (e) {
+      return []; //если возникает ошибка, то возвращаем пустой массив
+    }
+  })(),
   loading: false,
   error: null,
 };
@@ -45,6 +52,20 @@ export const createPost = createAsyncThunk('post/createPost', async (data: Creat
   return response
 })
 
+export const updatePost = createAsyncThunk('post/updatePost', async ({ id, data }: { id: string, data: CreatePostData }) => {
+
+
+  console.log('Updating post with ID:', id);
+  console.log('Post data:', data);
+  try {
+    const response = await postApi.updatePost(id, data)
+    return response
+  } catch (error: any) {
+    console.error('Error updating post:', error);
+    throw error;
+  }
+})
+
 // Асинхронный thunk для переключения лайка
 export const togglePostLike = createAsyncThunk(
   'posts/togglePostLike',
@@ -61,6 +82,7 @@ const postsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Получение всех постов
       .addCase(fetchPosts.pending, (state) => { //если запрос выполняется
         state.loading = true; //устанавливаем loading в true
       })
@@ -73,22 +95,24 @@ const postsSlice = createSlice({
         state.error = action.error.message || null; //сохраняем ошибку в state
         state.loading = false; //устанавливаем loading в false
       })
+      // Получение одного поста
       .addCase(fetchOnePost.pending, (state) => {
         state.loading = true
       })
       .addCase(fetchOnePost.fulfilled, (state, action) => { //получаем пост если выполнено успешно
-        const existingPostIndex = state.posts.findIndex(post => post._id === action.payload._id); 
-      if (existingPostIndex >= 0) {
-        state.posts[existingPostIndex] = action.payload; // Обновляем существующий пост
-      } else {
-        state.posts.push(action.payload); // Добавляем новый пост
-      }
-      state.loading = false;
+        const postIndex = state.posts.findIndex(post => post._id === action.payload._id);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = action.payload; // Обновляем существующий пост
+        } else {
+          state.posts.push(action.payload); // Добавляем новый пост
+        }
+        state.loading = false;
       })
       .addCase(fetchOnePost.rejected, (state, action) => {
         state.error = action.error.message || null
         state.loading = false
       })
+      // Удаление поста
       .addCase(deletePost.pending, (state) => { //если запрос выполняется
         state.loading = true; //устанавливаем loading в true
       })
@@ -96,6 +120,7 @@ const postsSlice = createSlice({
         state.posts = state.posts.filter((post) => post._id !== action.payload); //удаляем пост из state
         state.loading = false; //устанавливаем loading в false
       })
+      // Переключение лайка
       .addCase(togglePostLike.fulfilled, (state, action) => {
         // Обработка успешного переключения лайка
         const updatedPost = action.payload;
@@ -129,6 +154,22 @@ const postsSlice = createSlice({
       .addCase(createPost.rejected, (state, action) => { //если запрос выполнен с ошибкой
         state.error = action.error.message || 'Ошибка при создании поста'; //сохраняем ошибку в state
         state.loading = false; //устанавливаем loading в false
+      })
+      // Обновление поста
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        const postIndex = state.posts.findIndex(post => post._id === action.payload._id);//находим индекс поста
+        if (postIndex !== -1) { 
+          state.posts[postIndex] = action.payload;
+        }
+        state.loading = false;
+      })
+      .addCase(updatePost.rejected, (state, action) => {
+        state.error = action.error.message || 'Ошибка при обновлении поста';
+        state.loading = false;
       })
 
   },

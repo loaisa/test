@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { postApi } from "../../services/api";
 import { Card, CardContent, CardHeader, CardMedia, Typography, CircularProgress, Box, Container, IconButton } from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchOnePost, togglePostLike } from "../../store/slices/postsSlice";
-import { Post } from "../../types/types";
 import React from "react";
 
 

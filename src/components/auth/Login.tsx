@@ -1,6 +1,6 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLogin } from "../../store/slices/authSlice";
 import { AppDispatch, RootState } from "../../store/store";
@@ -11,10 +11,12 @@ const Login = () => {
   const navigate = useNavigate();
   const { isAuth } = useSelector((state: RootState) => state.auth);
   const [error, setError] = useState('');
+  
+  const location = useLocation()
 
   useEffect(() => {
     if (isAuth) {
-      navigate('/');
+      navigate(location.state?.from?.pathname || '/');
     }
   }, [isAuth, navigate]);
 
