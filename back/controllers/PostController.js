@@ -142,10 +142,27 @@ export const getUserPosts = async (req, res) => {
 
 export const getTags = async (req, res) => {
     try {
-        const tags = await PostModel.distinct('tags').exec()
-        res.json(tags)
+        const posts = await PostModel.find({}, 'tags').exec(); //find - находит все посты, tags - выбираем поле tags
+        
+        // Считаем популярность тегов
+        const tagCounts = {};
+        posts.forEach(post => {
+            post.tags.forEach(tag => { //forEach - проходим по всем тегам в посте
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1; //если тег уже есть в массиве, то увеличиваем его количество на 1
+            });
+        });
+        
+        // Преобразуем в массив объектов и сортируем по популярности
+        const sortedTags = Object.keys(tagCounts) //Получаем массив ключей (названий тегов):
+            .map(tag => ({ //Преобразуем массив строк в массив объектов: например ['react', 'js']
+                name: tag, 
+                count: tagCounts[tag] // в массиве будет [{ name: 'react', count: 5 }, { name: 'js', count: 12 }, ...] 
+            }))
+            .sort((a, b) => b.count - a.count); // сортировку по кол-ву тегов в порядке убывания
+        
+        res.json(sortedTags);
     } catch (err) {
-        console.log(err)
+        console.log(err);
         res.status(500).json({
             message: 'Не удалось получить теги'
         })
