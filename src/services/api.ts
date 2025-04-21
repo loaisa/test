@@ -36,7 +36,8 @@ api.interceptors.response.use(
 export const authApi = {
     register: async (email: string, fullName: string, password: string) => {
         try {
-            const response = await api.post('/auth/register', { email, fullName, password });
+            const response = await api.post('/auth/register', { email, fullName, password }); //делаем запрос на регистрацию и данные, в случае ошибки 
+            // выбрасываем ошибку, если всё ок, то возвращаем ответ.
             return response.data;
         } catch (error: any) {
             throw error;

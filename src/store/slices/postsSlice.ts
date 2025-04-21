@@ -54,9 +54,6 @@ export const createPost = createAsyncThunk('post/createPost', async (data: Creat
 
 export const updatePost = createAsyncThunk('post/updatePost', async ({ id, data }: { id: string, data: CreatePostData }) => {
 
-
-  console.log('Updating post with ID:', id);
-  console.log('Post data:', data);
   try {
     const response = await postApi.updatePost(id, data)
     return response
@@ -68,9 +65,16 @@ export const updatePost = createAsyncThunk('post/updatePost', async ({ id, data 
 
 // Асинхронный thunk для переключения лайка
 export const togglePostLike = createAsyncThunk('posts/togglePostLike', async (postId: string) => {
-    const response = await postApi.toggleLike(postId);
-    return response;
-  }
+  const response = await postApi.toggleLike(postId);
+  return response;
+}
+);
+
+export const addComment = createAsyncThunk('posts/addComment', async ({ id, text }: { id: string, text: string }) => {
+  const response = await postApi.addComment(id, text);
+  console.log(response)
+  return response;
+}
 );
 
 
@@ -160,12 +164,28 @@ const postsSlice = createSlice({
       })
       .addCase(updatePost.fulfilled, (state, action) => {
         const postIndex = state.posts.findIndex(post => post._id === action.payload._id);//находим индекс поста
-        if (postIndex !== -1) { 
+        if (postIndex !== -1) {
           state.posts[postIndex] = action.payload;
         }
         state.loading = false;
       })
       .addCase(updatePost.rejected, (state, action) => {
+        state.error = action.error.message || 'Ошибка при обновлении поста';
+        state.loading = false;
+      })
+      // Добавление комментария
+      .addCase(addComment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addComment.fulfilled, (state, action) => {
+        const postIndex = state.posts.findIndex(post => post._id === action.payload._id);//находим индекс поста
+        if (postIndex !== -1) {
+          state.posts[postIndex] = action.payload;
+        }
+        state.loading = false;
+      })
+      .addCase(addComment.rejected, (state, action) => {
         state.error = action.error.message || 'Ошибка при обновлении поста';
         state.loading = false;
       })

@@ -1,5 +1,6 @@
 import PostModel from '../models/Post.js'
 import mongoose from 'mongoose'
+import UserModel from '../models/User.js'
 
 export const createPost = async (req, res) => {
     try {
@@ -219,8 +220,8 @@ export const addComment = async (req, res) => {
         }
 
         // Находим пост
-        const post = await PostModel.findById(postId);
-        
+        const post = await PostModel.findById(postId)
+        const user = await UserModel.findById(req.userId) //Ищем пользователя по id
         if (!post) {
             return res.status(404).json({
                 message: 'Пост не найден'
@@ -231,7 +232,7 @@ export const addComment = async (req, res) => {
         const comment = {
             id: new mongoose.Types.ObjectId(),
             text,
-            user: userId,
+            user,
             createdAt: new Date()
         };
 
@@ -243,7 +244,6 @@ export const addComment = async (req, res) => {
             },
             { new: true }
         ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] });
-
         res.json(updatedPost);
     } catch (err) {
         console.log(err);

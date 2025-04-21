@@ -1,14 +1,84 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardMedia, Typography, CircularProgress, Box, Container, IconButton, CardActions, TextField, Button, Divider, List, ListItem, ListItemText, Avatar } from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from '../../store/store';
-import { fetchOnePost, togglePostLike } from "../../store/slices/postsSlice";
-import React from "react";
+import { fetchOnePost, togglePostLike, addComment } from "../../store/slices/postsSlice";
 import { Comment } from "../../types/types";
 
+
 const API_URL = process.env.REACT_APP_API_URL;
+
+// Выносим форму комментариев в отдельный компонент
+const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: boolean }) => {
+    const [commentText, setCommentText] = useState<string>('');
+    const dispatch = useDispatch<AppDispatch>();
+
+    const handleSubmit = useCallback((e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!commentText.trim() || !postId) return;
+        
+        dispatch(addComment({id: postId, text: commentText}));
+        setCommentText(''); // Сразу очищаем поле ввода
+    }, [postId, commentText, dispatch]);
+
+    return (
+        <Box component="form" onSubmit={handleSubmit} sx={{ mb: 3 }}>
+            <TextField
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Напишите комментарий..."
+                sx={{ mb: 2 }}
+            />
+            <Button 
+                type="submit" 
+                variant="contained" 
+                disabled={!commentText.trim() || loading}
+            >
+                {loading ? "Отправка..." : "Отправить"}
+            </Button>
+        </Box>
+    );
+});
+
+// Компонент для отображения отдельного комментария
+const CommentItem = React.memo(({ comment }: { comment: Comment }) => (
+    <React.Fragment>
+        <ListItem alignItems="flex-start">
+            <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}>
+                    </Avatar>
+                    <Typography variant="subtitle2" component="span">
+                        {comment.user.fullName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                        {new Date(comment.createdAt).toLocaleString()}
+                    </Typography>
+                </Box>
+                <Typography variant="body2" color="text.primary">
+                    {comment.text}
+                </Typography>
+            </Box>
+        </ListItem>
+        <Divider component="li" />
+    </React.Fragment>
+));
+
+// Компонент для отображения списка комментариев
+const CommentsList = React.memo(({ comments }: { comments: Comment[] }) => (
+    <List>
+        {comments.map((comment) => (
+            <CommentItem key={comment._id} comment={comment} />
+        ))}
+    </List>
+));
 
 const FullPost = React.memo(() => {
     const { id } = useParams<string>();
@@ -18,20 +88,23 @@ const FullPost = React.memo(() => {
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     
-
     useEffect(() => {
         if (id) {
             dispatch(fetchOnePost(id)); // Диспатчим экшен для получения поста
         }
-    }, [id, dispatch,]);
+    }, [id, dispatch]);
 
-    const post = posts.find((p) => p._id === id); // Проверяем, что posts определен
+    // Используем useMemo для нахождения поста
+    const post = useMemo(() => 
+        posts.find((p) => p._id === id),
+        [posts, id]
+    );
 
-    const handleToggleLike = (postId: string) => {
+    const handleToggleLike = useCallback((postId: string) => {
         dispatch(togglePostLike(postId));
-    }
+    }, [dispatch]);
 
-    if (loading) {
+    if (loading && !post) {  //Изменили условие загрузки - теперь если loading активен И поста ещё нет. Это позволяет не мигать лоадером при добавлении комментария.
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -54,6 +127,7 @@ const FullPost = React.memo(() => {
             </Box>
         );
     }
+    
     return (
         <Container maxWidth="md" sx={{ mt: 10 }}>
             <Card sx={{ padding: 2, backgroundColor: '#fff2f2', mb: 3 }}>
@@ -109,52 +183,13 @@ const FullPost = React.memo(() => {
                 </Typography>
 
                 {user && (
-                    <Box component="form" onSubmit={()=>{}} sx={{ mb: 3 }}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            variant="outlined"
-                            placeholder="Напишите комментарий..."
-                            sx={{ mb: 2 }}
-                        />
-                        <Button 
-                            type="submit" 
-                            variant="contained" 
-                        >
-                            Отправить
-                        </Button>
-                    </Box>
+                    <CommentForm postId={post._id} loading={loading} />
                 )}
 
                 <Divider sx={{ mb: 2 }} />
 
                 {post.comments && post.comments.length > 0 ? (
-                    <List>
-                        {post.comments.map((comment: Comment) => (
-                            <React.Fragment key={comment._id}>
-                                <ListItem alignItems="flex-start">
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                            <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}>
-                                                {comment.user.fullName.charAt(0)}
-                                            </Avatar>
-                                            <Typography variant="subtitle2" component="span">
-                                                {comment.user.fullName}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                                                {new Date(comment.createdAt).toLocaleString()}
-                                            </Typography>
-                                        </Box>
-                                        <Typography variant="body2" color="text.primary">
-                                            {comment.text}
-                                        </Typography>
-                                    </Box>
-                                </ListItem>
-                                <Divider component="li" />
-                            </React.Fragment>
-                        ))}
-                    </List>
+                    <CommentsList comments={post.comments} />
                 ) : (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
                         Пока нет комментариев. Будьте первым!
@@ -163,6 +198,6 @@ const FullPost = React.memo(() => {
             </Card>
         </Container>
     );
-})
+});
 
 export default FullPost;
