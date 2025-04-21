@@ -205,3 +205,50 @@ export const toggleLike = async (req, res) => {
         });
     }
 }
+
+export const addComment = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const userId = req.userId; // ID пользователя из токена
+        const { text } = req.body;
+
+        if (!text) {
+            return res.status(400).json({
+                message: 'Текст комментария обязателен'
+            });
+        }
+
+        // Находим пост
+        const post = await PostModel.findById(postId);
+        
+        if (!post) {
+            return res.status(404).json({
+                message: 'Пост не найден'
+            });
+        }
+
+        // Создаем объект комментария
+        const comment = {
+            id: new mongoose.Types.ObjectId(),
+            text,
+            user: userId,
+            createdAt: new Date()
+        };
+
+        // Добавляем комментарий к посту
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            postId,
+            {
+                $push: { comments: comment } // Добавляем комментарий в массив
+            },
+            { new: true }
+        ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] });
+
+        res.json(updatedPost);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Не удалось добавить комментарий'
+        });
+    }
+}

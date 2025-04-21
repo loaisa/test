@@ -4,7 +4,7 @@ import mongoose from 'mongoose'; // импортируем для подключ
 import cors from 'cors'; // импортируем для обработки CORS
 import { registerValidation, loginValidation, postCreateValidationValidation } from './validations/validations.js' // импортируем для валидации
 import { register, login, getMe, getOneUser } from './controllers/UserController.js' // импортируем для регистрации и авторизации   
-import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, toggleLike } from './controllers/PostController.js' // импортируем для создания, получения, удаления и обновления постов
+import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, toggleLike, addComment } from './controllers/PostController.js' // импортируем для создания, получения, удаления и обновления постов
 import checkAuth from './utils/checkAuth.js' // импортируем для проверки авторизации
 import multer from 'multer' // импортируем для загрузки изображений
 import { validationErrors } from './utils/VallidationErros.js' // импортируем для проверки валидации
@@ -93,3 +93,4 @@ app.post('/posts/:id/like', checkAuth, toggleLike) //лайкаем пост п�
 app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, createPost) //проверяем авторизацию и валидацию поста, статью нельзя создать без авторизации и отправляем ошибки
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id
+app.post('/posts/:id/comment', checkAuth, addComment) //добавляем комментарий к посту

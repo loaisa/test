@@ -67,9 +67,7 @@ export const updatePost = createAsyncThunk('post/updatePost', async ({ id, data 
 })
 
 // Асинхронный thunk для переключения лайка
-export const togglePostLike = createAsyncThunk(
-  'posts/togglePostLike',
-  async (postId: string) => {
+export const togglePostLike = createAsyncThunk('posts/togglePostLike', async (postId: string) => {
     const response = await postApi.toggleLike(postId);
     return response;
   }

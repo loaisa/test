@@ -133,6 +133,14 @@ export const postApi = {
             throw error;
         }
     },
+    addComment: async (postId: string, text: string) => {
+        try {
+            const response = await api.post(`/posts/${postId}/comment`, { text });
+            return response.data;
+        } catch (error: any) {
+            throw error;
+        }
+    },
     getPostsByTag: async (tag: string) => {
         try {
             const response = await api.get(`/posts/tag/${tag}`);

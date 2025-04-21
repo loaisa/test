@@ -6,10 +6,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Header from './components/Header';
 import FullPost from './components/Posts/FullPost';
-
 import MyPostsPage from './pages/MyPostsPage';
-import { Container, CircularProgress, Box } from '@mui/material';
-import { AppDispatch, RootState } from './store/store';
+import { Container } from '@mui/material';
+import { AppDispatch } from './store/store';
 import { checkAuth } from './store/slices/authSlice';
 import CreatePost from './components/Posts/CreatePost';
 import MyProfile from './components/MyProfile';

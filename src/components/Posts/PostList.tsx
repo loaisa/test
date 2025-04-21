@@ -62,7 +62,7 @@ const PostList = () => {
     return (
         <Box sx={{ width: '100%'}}>
             {sortedPosts.map((post) => (
-              <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }} key={post._id}>
+              <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2',  }} key={post._id}>
                     <CardHeader
                       title={post.title}
                     />
@@ -72,18 +72,18 @@ const PostList = () => {
                       image={`${API_URL}${post.imageUrl}`}
                       alt={post.title}
                     />
-                    <CardContent>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                    <CardContent >
+                      <Typography variant="body2" sx={{ color: '', margin: 2 }}>
                         {post.text}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                      <Typography variant="body2" sx={{ color: '', margin: 2 }}>
                         Дата создания: {new Date(post.createdAt).toLocaleDateString()}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                      <Typography variant="body2" sx={{ color: '', margin: 2 }}>
                         Автор: {post.user.fullName}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>Тэги: {post.tags.join(', ')}</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', margin: 2 }}>
+                      <Typography variant="body2" sx={{ color: '', margin: 2 }}>Тэги: {post.tags.join(', ')}</Typography>
+                      <Typography variant="body2" sx={{ color: '', margin: 2 }}>
                         Просмотры: {post.viewsCount}
                       </Typography>
                     </CardContent>
@@ -93,7 +93,7 @@ const PostList = () => {
                         Открыть статью
                       </RouterLink>
                     </Button>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton 
                           aria-label="add to favorites" 
                           onClick={() => handleToggleLike(post._id)}
@@ -110,8 +110,8 @@ const PostList = () => {
                             transition: 'color 0.3s ease'
                           }} />
                         </IconButton>
-                        <Typography variant="body2" color="text.secondary">
-                          {post.likesCount || 0}
+                        <Typography variant="body2" color="">
+                          {post.likesCount || ''}
                         </Typography>
                       </Box>
                     </CardActions>
