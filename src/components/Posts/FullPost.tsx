@@ -49,11 +49,14 @@ const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: 
 
 // Компонент для отображения отдельного комментария
 const CommentItem = React.memo(({ comment }: { comment: Comment }) => (
+
+
     <React.Fragment>
         <ListItem alignItems="flex-start">
             <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}>
+                    <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
+                     src={`${API_URL}${comment.user.avatarUrl}`}>
                     </Avatar>
                     <Typography variant="subtitle2" component="span">
                         {comment.user.fullName}
@@ -72,13 +75,13 @@ const CommentItem = React.memo(({ comment }: { comment: Comment }) => (
 ));
 
 // Компонент для отображения списка комментариев
-const CommentsList = React.memo(({ comments }: { comments: Comment[] }) => (
-    <List>
+const CommentsList = React.memo(({ comments }: { comments: Comment[] }) =>(    
+   <List>
         {comments.map((comment) => (
             <CommentItem key={comment._id} comment={comment} />
         ))}
-    </List>
-));
+    </List>  
+))
 
 const FullPost = React.memo(() => {
     const { id } = useParams<string>();
@@ -127,7 +130,7 @@ const FullPost = React.memo(() => {
             </Box>
         );
     }
-    
+    console.log(post.comments)
     return (
         <Container maxWidth="md" sx={{ mt: 10 }}>
             <Card sx={{ padding: 2, backgroundColor: '#fff2f2', mb: 3 }}>

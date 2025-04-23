@@ -27,10 +27,21 @@ const postSchema = new mongoose.Schema({
         default: [],
         ref: 'User'
     },
-    comments: {
-        type: Array,
-        default: [],
-    },
+    comments: [{
+        text: {
+          type: String,
+          required: true
+        },
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now
+        }
+      }],
     user: {
         type: mongoose.Schema.Types.ObjectId, //ссылка на пользователя в базе данных
         ref: 'User', //ссылка на модель пользователя

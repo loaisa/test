@@ -110,7 +110,7 @@ export const getMe = async (req, res) => { //Проверяем токен на 
     }
 } //Контроллер для получения данных пользователя
 
-export const getOneUser = async (req, res) => { //Получаем один пользователя по id
+export const getOneUser = async (req, res) => { //Получаем одного пользователя по id
     try {
         const userId = req.params.id
         const user = await UserModel.findById(userId)
@@ -119,6 +119,8 @@ export const getOneUser = async (req, res) => { //Получаем один по
                 message: 'Пользователь не найден'
             })
         }
+        const { passwordHash, ...userData } = user._doc;
+        res.json(userData)
     }
     catch (err) {
         console.log(err)
@@ -127,3 +129,36 @@ export const getOneUser = async (req, res) => { //Получаем один по
         })
     }
 }   
+
+export const updateImageUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Проверяем, загружен ли файл
+        if (!req.file) {
+            return res.status(400).json({ message: 'Файл не найден' });
+        }
+
+        const avatarUrl = `/uploads/${req.file.filename}`;
+        
+        const user = await UserModel.findOneAndUpdate(
+            { _id: userId },
+            { 
+                $set: { avatarUrl: avatarUrl }
+            },
+            { new: true }
+        );
+          // Исключаем passwordHash из ответа
+        const { passwordHash, ...userData } = user._doc;
+        res.json({
+            user: userData,
+            url: avatarUrl
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Не удалось обновить изображение пользователя'
+        });
+    }
+}

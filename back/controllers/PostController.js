@@ -37,15 +37,23 @@ export const getAll = async (req, res) => {
     }
 }
 
-export const getOne = async (req, res) => {
+export const getOne = async (req, res) => { //получаем пост по id
     try {
         const postId = req.params.id //id поста из url
         const post = await PostModel.findByIdAndUpdate( //findByIdAndUpdate - находит пост по id и обновляет его
             postId,
             { $inc: { viewsCount: 1 } }, //увеличиваем количество просмотров поста с помощью $inc
             { returnDocument: 'after' } //возвращает обновленный документ
-        ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] }); // Добавляем populate для пользователя, то есть заполняем поле user в посте
-        
+        )
+            .populate({
+                path: 'user',
+                select: ['_id', 'fullName', 'avatarUrl']
+            }) // Добавляем populate для пользователя, то есть заполняем поле user в посте
+            .populate({
+                path: 'comments.user',
+                model: 'User',
+                select: ['_id', 'fullName', 'avatarUrl']
+            });
         if (!post) { //если пост не найден, возвращаем ошибку
             return res.status(404).json({
                 message: 'Пост не найден'
@@ -139,12 +147,12 @@ export const getUserPosts = async (req, res) => {
             message: 'Не удалось получить посты пользователя'
         })
     }
-}   
+}
 
 export const getTags = async (req, res) => {
     try {
         const posts = await PostModel.find({}, 'tags').exec(); //find - находит все посты, tags - выбираем поле tags
-        
+
         // Считаем популярность тегов
         const tagCounts = {};
         posts.forEach(post => {
@@ -152,15 +160,15 @@ export const getTags = async (req, res) => {
                 tagCounts[tag] = (tagCounts[tag] || 0) + 1; //если тег уже есть в массиве, то увеличиваем его количество на 1
             });
         });
-        
+
         // Преобразуем в массив объектов и сортируем по популярности
         const sortedTags = Object.keys(tagCounts) //Получаем массив ключей (названий тегов):
             .map(tag => ({ //Преобразуем массив строк в массив объектов: например ['react', 'js']
-                name: tag, 
+                name: tag,
                 count: tagCounts[tag] // в массиве будет [{ name: 'react', count: 5 }, { name: 'js', count: 12 }, ...] 
             }))
             .sort((a, b) => b.count - a.count); // сортировку по кол-ву тегов в порядке убывания
-        
+
         res.json(sortedTags);
     } catch (err) {
         console.log(err);
@@ -168,7 +176,7 @@ export const getTags = async (req, res) => {
             message: 'Не удалось получить теги'
         })
     }
-}   
+}
 
 export const toggleLike = async (req, res) => {
     try {
@@ -177,7 +185,7 @@ export const toggleLike = async (req, res) => {
 
         // Находим пост
         const post = await PostModel.findById(postId);
-        
+
         if (!post) {
             return res.status(404).json({
                 message: 'Пост не найден'
@@ -210,7 +218,6 @@ export const toggleLike = async (req, res) => {
 export const addComment = async (req, res) => {
     try {
         const postId = req.params.id;
-        const userId = req.userId; // ID пользователя из токена
         const { text } = req.body;
 
         if (!text) {
@@ -221,6 +228,10 @@ export const addComment = async (req, res) => {
 
         // Находим пост
         const post = await PostModel.findById(postId)
+            .populate({
+                path: 'user',
+                select: ['_id', 'fullName', 'avatarUrl']
+            })
         const user = await UserModel.findById(req.userId) //Ищем пользователя по id
         if (!post) {
             return res.status(404).json({
@@ -243,7 +254,11 @@ export const addComment = async (req, res) => {
                 $push: { comments: comment } // Добавляем комментарий в массив
             },
             { new: true }
-        ).populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] });
+        ).populate('user')//заполняем поле user в посте
+        .populate({
+          path: 'comments.user',
+          select: 'fullName avatarUrl'
+        }); //заполняем поле user в комментарии и поле user в посте
         res.json(updatedPost);
     } catch (err) {
         console.log(err);

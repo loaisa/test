@@ -38,6 +38,7 @@ const CreatePost: React.FC = () => {
   const [error, setError] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const isEdit = Boolean (id)
+  
 
   const navigate = useNavigate();
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Добавляем состояние для хранения URL загруженного изображения

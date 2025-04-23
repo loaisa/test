@@ -3,7 +3,7 @@ import express from 'express'; // импортируем для создания
 import mongoose from 'mongoose'; // импортируем для подключения к MongoDB
 import cors from 'cors'; // импортируем для обработки CORS
 import { registerValidation, loginValidation, postCreateValidationValidation } from './validations/validations.js' // импортируем для валидации
-import { register, login, getMe, getOneUser } from './controllers/UserController.js' // импортируем для регистрации и авторизации   
+import { register, login, getMe, getOneUser, updateImageUser } from './controllers/UserController.js' // импортируем для регистрации и авторизации   
 import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, toggleLike, addComment } from './controllers/PostController.js' // импортируем для создания, получения, удаления и обновления постов
 import checkAuth from './utils/checkAuth.js' // импортируем для проверки авторизации
 import multer from 'multer' // импортируем для загрузки изображений
@@ -84,6 +84,7 @@ app.post('/auth/login', loginValidation, validationErrors, login); //прове�
 app.post('/auth/register', registerValidation, validationErrors, register) //проверяем валидацию и регистрируем пользователя и отправляем ошибки
 app.get('/auth/me', checkAuth, getMe) //проверяем авторизацию и получаем информацию о пользователе
 app.get('/users/:id', getOneUser) //получаем одного пользователя по id
+app.patch('/users/:id/update-image', checkAuth, upload.single('image'), updateImageUser);//обновляем изображение пользоветеля по id
 app.get('/posts/tags', getTags) //получаем все теги
 
 app.get('/posts', getAll) //получаем все посты

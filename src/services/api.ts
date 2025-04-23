@@ -167,3 +167,15 @@ export const postApi = {
         }
     }
 };
+
+export const userApi = {
+    updateImageUser: async (id: string, formData: FormData )=>{
+        try {
+            const response = await api.patch(`/users/${id}/update-image`, formData)
+            return response.data
+        }catch(error: any){
+            throw error
+        }
+    },
+
+}

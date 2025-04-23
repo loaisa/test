@@ -16,8 +16,11 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { RootState } from '../store/store';
+
 const pages = ['Главная'];
 const settings = ['Профиль', 'Мои посты', 'Выйти'];
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Header = () => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -26,6 +29,12 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const getAvatarUrl = () => {
+    if (user?.avatarUrl) {
+      return `${API_URL}${user.avatarUrl}`;
+    }
+    return undefined;
+  };
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -111,7 +120,7 @@ const Header = () => {
               <Typography sx={{ mr: 2 }}>{user?.fullName}</Typography>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="Remy Sharp" src={getAvatarUrl()} />
               </IconButton>
             </Tooltip>
             <Menu
