@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
-import { Box, Avatar, Typography, Container, Button, styled } from '@mui/material';
+import { Box, Avatar, Typography, Container, Button, IconButton, styled } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 import { useState } from 'react';
