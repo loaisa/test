@@ -1,18 +1,9 @@
 {
     "version": 2,
-    "builds": [
-      { "src": "package.json", "use": "@vercel/static-build" }
-    ],
-    "routes": [
-      { "src": "/static/(.*)", "dest": "/static/$1" },
-      { "src": "/assets/(.*)", "dest": "/assets/$1" },
-      { "src": "/favicon.ico", "dest": "/favicon.ico" },
-      { "src": "/manifest.json", "dest": "/manifest.json" },
-      { "src": "/test.html", "dest": "/test.html" },
-      { "src": "/(.*)\\.html", "dest": "/$1.html" },
-      { "src": "/(.*)", "dest": "/index.html" }
-    ],
-    "buildCommand": "npm run build",
-    "outputDirectory": "build",
-    "ignoreCommand": "git diff --quiet HEAD^ HEAD ./back/"
-  }
+    "public": true,
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "github": {
+      "silent": true
+    }
+}
