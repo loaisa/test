@@ -11,6 +11,26 @@ import { validationErrors } from './utils/VallidationErros.js' // импорти
 import path from 'path'; // импортируем для работы с путями
 import fs from 'fs'; // импортируем для работы с файлами
 import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: 'postlearn',
+      allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
+      transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+    }
+});
+
+const upload = multer({ storage });
 
 const app = express(); //создали сервер
 
@@ -37,17 +57,19 @@ app.use(cors({
     origin: process.env.FRONTEND_URL || `*`,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-const upload = multer({ 
-    storage: multer.diskStorage({ //конфигурация для multer
-        destination: (_, __, cb) => { //куда будем сохранять файлы
-            cb(null, 'uploads'); //путь к папке
-        },
-        filename: (_, file, cb) => { //как будем называть файл      
-            cb(null, file.originalname); //название файла
-        }
-    })
-});
+
+// const upload = multer({ 
+//     storage: multer.diskStorage({ //конфигурация для multer
+//         destination: (_, __, cb) => { //куда будем сохранять файлы
+//             cb(null, 'uploads'); //путь к папке
+//         },
+//         filename: (_, file, cb) => { //как будем называть файл      
+//             cb(null, file.originalname); //название файла
+//         }
+//     })
+// });
 
 app.use(express.json()); //Сделали так, чтобы можно было принимать json в запросах
 app.use('/uploads', express.static('uploads'))  //если придёт запрос на /uploads, то отдаём файлы из папки uploads
@@ -96,3 +118,17 @@ app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, 
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id
 app.post('/posts/:id/comment', checkAuth, addComment) //добавляем комментарий к посту
+
+// Добавляем обработчик для корневого маршрута
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Добро пожаловать в API PostLearn',
+    status: 'online',
+    endpoints: {
+      auth: ['/auth/login', '/auth/register', '/auth/me'],
+      posts: ['/posts', '/posts/:id', '/posts/user/:id', '/posts/:id/like', '/posts/:id/comment'],
+      tags: ['/posts/tags'],
+      uploads: ['/uploads']
+    }
+  });
+});

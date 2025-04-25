@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Минимальная тестовая страница</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #4a4a4a;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    .test-btn {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Тестовая страница PostLearn</h1>
+    <p>Если вы видите эту страницу, значит Vercel правильно доставляет статические файлы.</p>
+    
+    <h2>Тест подключения к API:</h2>
+    <button class="test-btn" onclick="testAPI()">Проверить API соединение</button>
+    <div id="result">Результаты теста будут отображены здесь...</div>
+    
+    <h2>Информация об окружении:</h2>
+    <ul>
+      <li>URL текущей страницы: <span id="current-url"></span></li>
+      <li>User Agent: <span id="user-agent"></span></li>
+    </ul>
+  </div>
+
+  <script>
+    // Отображаем информацию об окружении
+    document.getElementById('current-url').textContent = window.location.href;
+    document.getElementById('user-agent').textContent = navigator.userAgent;
+    
+    // Функция для тестирования API
+    function testAPI() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Подключение к API...';
+      
+      // Проверяем соединение с бэкендом
+      fetch('https://friendsposts.up.railway.app/posts/tags')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ошибка ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          resultDiv.innerHTML = `
+            <p style="color: green;">✅ Соединение с API успешно!</p>
+            <p>Получено тегов: ${Array.isArray(data) ? data.length : 'не массив'}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        })
+        .catch(error => {
+          resultDiv.innerHTML = `
+            <p style="color: red;">❌ Ошибка соединения с API:</p>
+            <p>${error.message}</p>
+            <p>Проверьте консоль браузера для дополнительной информации.</p>
+          `;
+          console.error('API Error:', error);
+        });
+    }
+  </script>
+</body>
+</html> 
