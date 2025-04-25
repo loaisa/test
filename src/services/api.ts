@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { CreatePostData } from '../types/types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_URL = process.env.REACT_APP_API_URL || 'https://friendsposts.up.railway.app';
 
 const api = axios.create({
     baseURL: API_URL,
