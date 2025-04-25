@@ -10,26 +10,6 @@ import { Post } from "../../types/types";
 const API_URL = process.env.REACT_APP_API_URL;
 
 
-
-// const PostSkeleton = () => (
-//   <Card sx={{ width: '100%', margin: 2, gap: 2 }}>
-//     <CardHeader
-//       avatar={<Skeleton variant="circular" width={40} height={40} />}
-//       title={<Skeleton variant="text" width={200} />}
-//       subheader={<Skeleton variant="text" width={140} />}
-//     />
-//     <Skeleton variant="rectangular" height={194} />
-//     <CardContent>
-//       <Skeleton variant="text" />
-//       <Skeleton variant="text" />
-//       <Skeleton variant="text" width="60%" />
-//     </CardContent>
-//     <CardActions disableSpacing>
-//       <Skeleton variant="circular" width={30} height={30} />
-//     </CardActions>
-//   </Card>
-// );
-
 const MyPosts = () => {
   const { isAuth, user } = useSelector((state: RootState) => state.auth);
   const [posts, setPosts] = useState<Post[]>([]);
