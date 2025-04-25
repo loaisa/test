@@ -32,6 +32,33 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
+// Функция для получения корректного URL изображения
+const getImageUrl = (imageUrl?: string): string => {
+  if (!imageUrl) return '';
+  
+  // Задаем имя облака
+  const cloudName = "postlearn"; // Ваше имя облака в Cloudinary
+  
+  // Если URL уже абсолютный (http/https)
+  if (imageUrl.startsWith('http')) {
+    return imageUrl;
+  }
+  
+  // Если путь в формате /uploads/postlearn/filename
+  if (imageUrl && imageUrl.includes('/uploads/postlearn/')) {
+    // Извлекаем имя файла
+    const fileId = imageUrl.split('/').pop();
+    if (!fileId) return ''; // Защита от ошибок
+    
+    // Формируем прямой URL Cloudinary без v1/
+    const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
+    return cloudinaryUrl;
+  }
+  
+  // Иначе добавляем API_URL
+  return `${API_URL}${imageUrl}`;
+};
+
 const CreatePost: React.FC = () => {
 
   const { id } = useParams()
@@ -185,10 +212,10 @@ const CreatePost: React.FC = () => {
           setValue('title', post.payload.title)
           setValue('text', post.payload.text)
           setValue('tags', post.payload.tags.join(', '))
-          setPreviewUrl(`${API_URL}${post.payload.imageUrl}`)
+          setPreviewUrl(getImageUrl(post.payload.imageUrl))
           setUploadedImageUrl(post.payload.imageUrl) 
         } catch (err: any) {
-          console.error('Ошибка полуения поста:', err);
+          console.error('Ошибка получения поста:', err);
         }
       }
       getPost()
@@ -274,6 +301,7 @@ const CreatePost: React.FC = () => {
               <img
                 src={previewUrl}
                 alt="Preview"
+                crossOrigin="anonymous"
                 style={{
                   maxWidth: '100%',
                   maxHeight: '200px',

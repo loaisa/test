@@ -12,6 +12,33 @@ import { Link as RouterLink } from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// Добавим функцию для получения корректного URL изображения
+const getImageUrl = (imageUrl?: string): string => {
+    if (!imageUrl) return '';
+    
+    // Задаем имя облака
+    const cloudName = "postlearn"; // Ваше имя облака в Cloudinary
+    
+    // Если URL уже абсолютный (http/https)
+    if (imageUrl.startsWith('http')) {
+        return imageUrl;
+    }
+    
+    // Если путь в формате /uploads/postlearn/filename
+    if (imageUrl && imageUrl.includes('/uploads/postlearn/')) {
+        // Извлекаем имя файла
+        const fileId = imageUrl.split('/').pop();
+        if (!fileId) return ''; // Защита от ошибок
+        
+        // Формируем прямой URL Cloudinary без v1/
+        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
+        return cloudinaryUrl;
+    }
+    
+    // Иначе добавляем API_URL
+    return `${API_URL}${imageUrl}`;
+};
+
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }}>
     <CardHeader
@@ -69,7 +96,7 @@ const PostList = () => {
                     <CardMedia
                       component="img"
                       height="194"
-                      image={`${API_URL}${post.imageUrl}`}
+                      image={getImageUrl(post.imageUrl)}
                       alt={post.title}
                     />
                     <CardContent >

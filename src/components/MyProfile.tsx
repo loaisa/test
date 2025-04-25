@@ -90,6 +90,9 @@ const MyProfile = () => {
             userAvatar: user?.avatarUrl
         });
         
+        // Получим имя вашего облака Cloudinary
+        const cloudName = "postlearn"; // Жестко закодированное значение
+        
         // 1. Локальное превью имеет приоритет
         if (previewUrl?.startsWith('blob:')) {
             console.log('Using preview URL (blob)');
@@ -114,8 +117,8 @@ const MyProfile = () => {
             if (avatarUrl.includes('/uploads/postlearn/')) {
                 // Извлекаем имя файла
                 const fileId = avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary
-                const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/v1/${fileId}`;
+                // Формируем прямой URL Cloudinary - без версии v1/
+                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
                 console.log('Created Cloudinary URL from path:', cloudinaryUrl);
                 return cloudinaryUrl;
             }
@@ -138,8 +141,8 @@ const MyProfile = () => {
             if (user.avatarUrl.includes('/uploads/postlearn/')) {
                 // Извлекаем имя файла
                 const fileId = user.avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary
-                const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/v1/${fileId}`;
+                // Формируем прямой URL Cloudinary - без версии v1/
+                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
                 console.log('Created Cloudinary URL from user path:', cloudinaryUrl);
                 return cloudinaryUrl;
             }

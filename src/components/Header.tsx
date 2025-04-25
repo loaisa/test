@@ -30,16 +30,27 @@ const Header = () => {
   const navigate = useNavigate();
 
   const getAvatarUrl = () => {
+    // Задаем имя облака
+    const cloudName = "postlearn"; // Имя облака Cloudinary
+    
     if (user?.avatarUrl) {
-      if (user.avatarUrl.startsWith('http')) {
-        return user.avatarUrl;
-      }
-      if (user.avatarUrl.includes('/uploads/postlearn/')) {
-        const fileId = user.avatarUrl.split('/').pop();
-        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'postlearn'}/image/upload/v1/${fileId}`;
-        return cloudinaryUrl;
-      }
-      return `${API_URL}${user.avatarUrl}`;
+        // Если URL уже абсолютный
+        if (user.avatarUrl.startsWith('http')) {
+            return user.avatarUrl;
+        }
+        
+        // Если путь в формате /uploads/postlearn/filename
+        if (user.avatarUrl.includes('/uploads/postlearn/')) {
+            const fileId = user.avatarUrl.split('/').pop();
+            if (!fileId) return undefined; // Защита от ошибок
+            
+            // Формируем прямой URL Cloudinary без v1/
+            const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
+            return cloudinaryUrl;
+        }
+        
+        // Для других форматов путей добавляем API_URL
+        return `${API_URL}${user.avatarUrl}`;
     }
     return undefined;
   };

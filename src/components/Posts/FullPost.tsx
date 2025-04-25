@@ -14,17 +14,22 @@ const API_URL = process.env.REACT_APP_API_URL;
 const getImageUrl = (imageUrl?: string): string => {
     if (!imageUrl) return '';
     
+    // Задаем имя облака
+    const cloudName = "postlearn"; // Либо имя вашего настоящего облака
+    
     // Если URL уже абсолютный (http/https)
     if (imageUrl.startsWith('http')) {
         return imageUrl;
     }
     
     // Если путь в формате /uploads/postlearn/filename
-    if (imageUrl.includes('/uploads/postlearn/')) {
+    if (imageUrl && imageUrl.includes('/uploads/postlearn/')) {
         // Извлекаем имя файла
         const fileId = imageUrl.split('/').pop();
-        // Формируем прямой URL Cloudinary
-        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'postlearn'}/image/upload/v1/${fileId}`;
+        if (!fileId) return ''; // Защита от ошибок
+        
+        // Формируем прямой URL Cloudinary без версии v1/
+        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
         console.log('Created Cloudinary URL from path:', cloudinaryUrl);
         return cloudinaryUrl;
     }
