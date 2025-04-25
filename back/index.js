@@ -53,22 +53,39 @@ app.listen(PORT, (err) => {
     }
 }); //Запустили сервер на порту 
 
+// Заменяем на более детальную конфигурацию
+// Добавляем явные заголовки CORS перед middleware
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        'https://friends-posts.netlify.app',
+        'http://localhost:3000'
+    ];
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
+
+// А затем используем cors middleware как дополнительный слой защиты
 app.use(cors({
-    origin: process.env.FRONTEND_URL || `https://friends-posts.netlify.app`,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    origin: true,  // Разрешить все origin, мы уже фильтруем выше
+    credentials: true
 }));
 
-// const upload = multer({ 
-//     storage: multer.diskStorage({ //конфигурация для multer
-//         destination: (_, __, cb) => { //куда будем сохранять файлы
-//             cb(null, 'uploads'); //путь к папке
-//         },
-//         filename: (_, file, cb) => { //как будем называть файл      
-//             cb(null, file.originalname); //название файла
-//         }
-//     })
-// });
+
+
 
 app.use(express.json()); //Сделали так, чтобы можно было принимать json в запросах
 app.use('/uploads', express.static('uploads'))  //если придёт запрос на /uploads, то отдаём файлы из папки uploads
@@ -117,3 +134,18 @@ app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, 
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id
 app.post('/posts/:id/comment', checkAuth, addComment) //добавляем комментарий к посту
+
+
+// Добавляем обработчик для корневого маршрута
+app.get('/', (req, res) => {
+    res.json({ 
+      message: 'Добро пожаловать в API PostLearn',
+      status: 'online',
+      endpoints: {
+        auth: ['/auth/login', '/auth/register', '/auth/me'],
+        posts: ['/posts', '/posts/:id', '/posts/user/:id', '/posts/:id/like', '/posts/:id/comment'],
+        tags: ['/posts/tags'],
+        uploads: ['/uploads']
+      }
+    });
+  });
