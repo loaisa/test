@@ -57,7 +57,6 @@ app.use(cors({
     origin: process.env.FRONTEND_URL || `*`,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // const upload = multer({ 
@@ -118,17 +117,3 @@ app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, 
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id
 app.post('/posts/:id/comment', checkAuth, addComment) //добавляем комментарий к посту
-
-// Добавляем обработчик для корневого маршрута
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Добро пожаловать в API PostLearn',
-    status: 'online',
-    endpoints: {
-      auth: ['/auth/login', '/auth/register', '/auth/me'],
-      posts: ['/posts', '/posts/:id', '/posts/user/:id', '/posts/:id/like', '/posts/:id/comment'],
-      tags: ['/posts/tags'],
-      uploads: ['/uploads']
-    }
-  });
-});
