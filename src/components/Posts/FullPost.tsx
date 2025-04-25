@@ -10,6 +10,19 @@ import { Comment } from "../../types/types";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// Функция для получения корректного URL изображения
+const getImageUrl = (imageUrl?: string): string => {
+    if (!imageUrl) return '';
+    
+    // Если URL уже абсолютный (http/https)
+    if (imageUrl.startsWith('http')) {
+        return imageUrl;
+    }
+    
+    // Иначе добавляем API_URL
+    return `${API_URL}${imageUrl}`;
+};
+
 // Выносим форму комментариев в отдельный компонент
 const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: boolean }) => {
     const [commentText, setCommentText] = useState<string>('');
@@ -49,15 +62,15 @@ const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: 
 
 // Компонент для отображения отдельного комментария
 const CommentItem = React.memo(({ comment }: { comment: Comment }) => (
-
-
     <React.Fragment>
         <ListItem alignItems="flex-start">
             <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
-                     src={`${API_URL}${comment.user.avatarUrl}`}>
-                    </Avatar>
+                    <Avatar 
+                      sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
+                      src={getImageUrl(comment.user.avatarUrl)}
+                      imgProps={{ crossOrigin: "anonymous" }}
+                    />
                     <Typography variant="subtitle2" component="span">
                         {comment.user.fullName}
                     </Typography>
@@ -122,7 +135,6 @@ const FullPost = React.memo(() => {
             </Box>
         );
     }
-    console.log(post.comments)
     return (
         <Container maxWidth="md" sx={{ mt: 10 }}>
             <Card sx={{ padding: 2, backgroundColor: '#fff2f2', mb: 3 }}>
@@ -132,8 +144,9 @@ const FullPost = React.memo(() => {
                 />
                 <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
                     <img 
-                        src={`${API_URL}${post.imageUrl}`} 
+                        src={getImageUrl(post.imageUrl)} 
                         alt={post.title} 
+                        crossOrigin="anonymous"
                         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
                 </Box>

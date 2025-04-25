@@ -86,7 +86,6 @@ const authSlice = createSlice({
                 state.isAuth = true; //устанавливаем isAuth в true
                 state.loading = false; //устанавливаем loading в false
                 state.user = action.payload; //сохраняем весь payload в sate.user
-                console.log(action.payload)
             })
             .addCase(fetchRegister.rejected, (state, action) => { //если запрос выполнен с ошибкой    
                 state.error = action.error.message || null; //сохраняем ошибку в state

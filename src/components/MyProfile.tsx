@@ -29,7 +29,6 @@ const MyProfile = () => {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatarUrl || null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
  
-    console.log(avatarUrl)
 
     // Обработчик выбора файла - только создает превью, но не отправляет на сервер
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,27 +84,53 @@ const MyProfile = () => {
         };
 
     const getAvatarUrl = () => {
-        // Если используется локальное превью (blob URL)
+        console.log('Getting avatar URL with:', {
+            previewUrl,
+            avatarUrl,
+            userAvatar: user?.avatarUrl
+        });
+        
+        // 1. Локальное превью имеет приоритет
         if (previewUrl?.startsWith('blob:')) {
-            return previewUrl; // возвращаем blob URL напрямую
+            console.log('Using preview URL (blob)');
+            return previewUrl;
         }
         
-        // Если есть avatarUrl из состояния
+        // 2. URL из состояния avatarUrl
         if (avatarUrl) {
-            // Если avatarUrl уже blob URL, возвращаем его напрямую
+            // Если это локальный blob URL
             if (avatarUrl.startsWith('blob:')) {
+                console.log('Using avatarUrl (blob)');
                 return avatarUrl;
             }
-            // Иначе добавляем API_URL
-            return `${API_URL}${avatarUrl}`;
+            
+            // Если это абсолютный URL (например, от Cloudinary)
+            if (avatarUrl.startsWith('http')) {
+                console.log('Using avatarUrl (http)');
+                return avatarUrl;
+            }
+            
+            // Относительный путь - добавляем API_URL
+            const fullUrl = `${API_URL}${avatarUrl}`;
+            console.log('Using avatarUrl with API_URL:', fullUrl);
+            return fullUrl;
         }
         
-        // Если есть аватар пользователя
+        // 3. URL из данных пользователя
         if (user?.avatarUrl) {
-            return `${API_URL}${user.avatarUrl}`;
+            // Если это абсолютный URL
+            if (user.avatarUrl.startsWith('http')) {
+                console.log('Using user.avatarUrl (http)');
+                return user.avatarUrl;
+            }
+            
+            // Относительный путь - добавляем API_URL
+            const fullUrl = `${API_URL}${user.avatarUrl}`;
+            console.log('Using user.avatarUrl with API_URL:', fullUrl);
+            return fullUrl;
         }
         
-        // Нет URL
+        console.log('No avatar URL found');
         return undefined;
     };
 
@@ -117,6 +142,7 @@ const MyProfile = () => {
                     <Avatar 
                         sx={{ width: 100, height: 100, margin: '0 auto' }} 
                         src={getAvatarUrl()} 
+                        imgProps={{ crossOrigin: "anonymous" }}
                     />
                     {isEdit &&                     
                     <Box sx={{ mt: 2, mb: 2 }}>

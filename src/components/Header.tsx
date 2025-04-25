@@ -31,6 +31,9 @@ const Header = () => {
 
   const getAvatarUrl = () => {
     if (user?.avatarUrl) {
+      if (user.avatarUrl.startsWith('http')) {
+        return user.avatarUrl;
+      }
       return `${API_URL}${user.avatarUrl}`;
     }
     return undefined;
@@ -120,44 +123,48 @@ const Header = () => {
               <Typography sx={{ mr: 2 }}>{user?.fullName}</Typography>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src={getAvatarUrl()} />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}
-                  onClick={() => {
-                    if (setting === 'Выйти') {
-                      handleLogout()    ;
-                    }
-                    if (setting === 'Мои посты') {
-                      navigate('/my-posts');
-                    }
-                    if (setting === 'Профиль') {
-                      navigate('/my-profile');
-                    }
-                  }}
-                  >{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
+                  <Avatar 
+                    alt={user?.fullName || "User"} 
+                    src={getAvatarUrl()} 
+                    imgProps={{ crossOrigin: "anonymous" }}
+                  />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
+                {settings.map((setting) => (
+                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                    <Typography sx={{ textAlign: 'center' }}
+                    onClick={() => {
+                      if (setting === 'Выйти') {
+                        handleLogout()    ;
+                      }
+                      if (setting === 'Мои посты') {
+                        navigate('/my-posts');
+                      }
+                      if (setting === 'Профиль') {
+                        navigate('/my-profile');
+                      }
+                    }}
+                    >{setting}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
           ) : (
             <Box sx={{ flexGrow: 0 }}>
               <Typography>

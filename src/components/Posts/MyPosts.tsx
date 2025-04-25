@@ -39,9 +39,9 @@ const MyPosts = () => {
     try {
       dispatch(deletePost(id));
       setPosts(posts.filter(post => post._id !== id));
-      console.log('Пост удален');
+
     } catch (error) {
-      console.log(error);
+     
     }
   }
 

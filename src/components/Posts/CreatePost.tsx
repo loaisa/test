@@ -111,7 +111,6 @@ const CreatePost: React.FC = () => {
       if (response && response.url) {
         // Если загрузка успешна, сохраняем URL изображения
         setUploadedImageUrl(response.url);
-        console.log(response.url)
         setValue('imageUrl', response.url);
         return response.url;
       } else {
@@ -232,6 +231,7 @@ const CreatePost: React.FC = () => {
               rows={4}
               fullWidth
               margin="normal"
+              placeholder='Не менее 10 символов'
               error={!!errors.text}
               helperText={errors.text?.message}
             />

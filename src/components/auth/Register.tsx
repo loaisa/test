@@ -23,11 +23,9 @@ const Register = () => {
 
   const onSubmit =  (data: any) => {
     try {
-      const response =  dispatch(fetchRegister(data));
-      console.log(response)
+      dispatch(fetchRegister(data));
       navigate('/')
     } catch (error: any) {
-      console.log(error.response)
       setError(error.response?.data?.message || 'Произошла ошибка при регистрации');
     }
   };

@@ -90,32 +90,43 @@ app.use(cors({
 app.use(express.json()); //Сделали так, чтобы можно было принимать json в запросах
 app.use('/uploads', express.static('uploads'))  //если придёт запрос на /uploads, то отдаём файлы из папки uploads
 
-app.post('/uploads', checkAuth, upload.single('image'), (req, res) => { //загружаем изображение и сохраняем его в папку uploads
+app.post('/uploads', checkAuth, upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Файл не загружен' });
     }
+    console.log('Uploaded file to Cloudinary - FULL DETAILS:', JSON.stringify(req.file, null, 2));
+    
+    // Проверка структуры полей Cloudinary
+    const cloudinaryUrl = req.file.path || req.file.secure_url || req.file.url;
+    console.log('Using URL:', cloudinaryUrl);
+    
     res.json({
-        url: `/uploads/${req.file.originalname}` //возвращаем url изображения
+        url: cloudinaryUrl, // Используем наиболее подходящее поле для URL
+        filename: req.file.filename,
+        original: req.file // Отправляем весь объект для отладки на фронтенде
     });
-}) 
+})
+
 // Эндпоинт для удаления изображения
-app.delete('/uploads/:filename', checkAuth, (req, res) => {
+app.delete('/uploads/:filename', checkAuth, async (req, res) => {
     try {
-      const filePath = path.join(__dirname, 'uploads', req.params.filename);
+      const filename = req.params.filename;
+      console.log('Trying to delete file from Cloudinary:', filename); // Лог для отладки
       
-      // Проверяем существование файла
-      if (fs.existsSync(filePath)) {
-        // Удаляем файл
-        fs.unlinkSync(filePath);
+      // Удаляем файл из Cloudinary
+      const result = await cloudinary.uploader.destroy(filename);
+      console.log('Cloudinary delete result:', result); // Лог для отладки
+      
+      if (result.result === 'ok') {
         res.json({ message: 'Файл успешно удален' });
       } else {
-        res.status(404).json({ message: 'Файл не найден' });
+        res.status(404).json({ message: 'Файл не найден или не может быть удален' });
       }
     } catch (err) {
-      console.error('Error deleting file:', err);
+      console.error('Error deleting file from Cloudinary:', err);
       res.status(500).json({ message: 'Ошибка при удалении файла' });
     }
-  });
+});
 
 // если придёт запрос на /uploads, то отдаём файлы из папки uploads
 

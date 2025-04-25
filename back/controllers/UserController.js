@@ -139,26 +139,41 @@ export const updateImageUser = async (req, res) => {
             return res.status(400).json({ message: 'Файл не найден' });
         }
 
-        const avatarUrl = `/uploads/${req.file.filename}`;
+        console.log('AVATAR UPDATE - Cloudinary File Details:', JSON.stringify(req.file, null, 2));
+        
+        // Получаем URL из наиболее подходящего поля
+        const cloudinaryUrl = req.file.secure_url || req.file.path || req.file.url;
+        console.log('Using Cloudinary URL for avatar:', cloudinaryUrl);
+        
+        if (!cloudinaryUrl) {
+            return res.status(400).json({ 
+                message: 'Не удалось получить URL изображения из Cloudinary',
+                fileDetails: req.file 
+            });
+        }
         
         const user = await UserModel.findOneAndUpdate(
             { _id: userId },
             { 
-                $set: { avatarUrl: avatarUrl }
+                $set: { avatarUrl: cloudinaryUrl }
             },
             { new: true }
         );
-          // Исключаем passwordHash из ответа
+        
+        // Исключаем passwordHash из ответа
         const { passwordHash, ...userData } = user._doc;
         res.json({
             user: userData,
-            url: avatarUrl
+            url: cloudinaryUrl,
+            filename: req.file.filename || req.file.public_id,
+            fileDetails: req.file // Для отладки
         });
 
     } catch (err) {
-        console.log(err);
+        console.error('Error updating user avatar:', err);
         res.status(500).json({
-            message: 'Не удалось обновить изображение пользователя'
+            message: 'Не удалось обновить изображение пользователя',
+            error: err.message
         });
     }
 }

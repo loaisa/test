@@ -42,7 +42,6 @@ export const fetchOnePost = createAsyncThunk('posts/fetchOnePost', async (id: st
     const response = await postApi.getOnePost(id);
     return response;
   } catch (error) {
-    console.error('Error fetching post:', error);
     throw error; // Пробрасываем ошибку, чтобы она была обработана в редюсере
   }
 });
@@ -58,7 +57,6 @@ export const updatePost = createAsyncThunk('post/updatePost', async ({ id, data 
     const response = await postApi.updatePost(id, data)
     return response
   } catch (error: any) {
-    console.error('Error updating post:', error);
     throw error;
   }
 })
@@ -72,7 +70,6 @@ export const togglePostLike = createAsyncThunk('posts/togglePostLike', async (po
 
 export const addComment = createAsyncThunk('posts/addComment', async ({ id, text }: { id: string, text: string }) => {
   const response = await postApi.addComment(id, text);
-  console.log(response)
   return response;
 }
 );
