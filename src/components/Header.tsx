@@ -34,6 +34,11 @@ const Header = () => {
       if (user.avatarUrl.startsWith('http')) {
         return user.avatarUrl;
       }
+      if (user.avatarUrl.includes('/uploads/postlearn/')) {
+        const fileId = user.avatarUrl.split('/').pop();
+        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'postlearn'}/image/upload/v1/${fileId}`;
+        return cloudinaryUrl;
+      }
       return `${API_URL}${user.avatarUrl}`;
     }
     return undefined;

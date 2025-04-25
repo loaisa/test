@@ -110,7 +110,17 @@ const MyProfile = () => {
                 return avatarUrl;
             }
             
-            // Относительный путь - добавляем API_URL
+            // Если путь в формате /uploads/postlearn/filename
+            if (avatarUrl.includes('/uploads/postlearn/')) {
+                // Извлекаем имя файла
+                const fileId = avatarUrl.split('/').pop();
+                // Формируем прямой URL Cloudinary
+                const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/v1/${fileId}`;
+                console.log('Created Cloudinary URL from path:', cloudinaryUrl);
+                return cloudinaryUrl;
+            }
+            
+            // Другие относительные пути - добавляем API_URL
             const fullUrl = `${API_URL}${avatarUrl}`;
             console.log('Using avatarUrl with API_URL:', fullUrl);
             return fullUrl;
@@ -124,7 +134,17 @@ const MyProfile = () => {
                 return user.avatarUrl;
             }
             
-            // Относительный путь - добавляем API_URL
+            // Если путь в формате /uploads/postlearn/filename
+            if (user.avatarUrl.includes('/uploads/postlearn/')) {
+                // Извлекаем имя файла
+                const fileId = user.avatarUrl.split('/').pop();
+                // Формируем прямой URL Cloudinary
+                const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo'}/image/upload/v1/${fileId}`;
+                console.log('Created Cloudinary URL from user path:', cloudinaryUrl);
+                return cloudinaryUrl;
+            }
+            
+            // Другие относительные пути - добавляем API_URL
             const fullUrl = `${API_URL}${user.avatarUrl}`;
             console.log('Using user.avatarUrl with API_URL:', fullUrl);
             return fullUrl;

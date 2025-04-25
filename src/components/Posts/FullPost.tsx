@@ -19,6 +19,16 @@ const getImageUrl = (imageUrl?: string): string => {
         return imageUrl;
     }
     
+    // Если путь в формате /uploads/postlearn/filename
+    if (imageUrl.includes('/uploads/postlearn/')) {
+        // Извлекаем имя файла
+        const fileId = imageUrl.split('/').pop();
+        // Формируем прямой URL Cloudinary
+        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'postlearn'}/image/upload/v1/${fileId}`;
+        console.log('Created Cloudinary URL from path:', cloudinaryUrl);
+        return cloudinaryUrl;
+    }
+    
     // Иначе добавляем API_URL
     return `${API_URL}${imageUrl}`;
 };
