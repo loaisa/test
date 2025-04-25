@@ -14,9 +14,9 @@ const Register = () => {
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      email: 'loaisa.zhenya3@gmail.com',
-      fullName: 'ddd1',
-      password: 'qwerty',
+      email: '',
+      fullName: '',
+      password: '',
     },
     mode: 'onChange',
   });
