@@ -37,15 +37,15 @@ const getImageUrl = (imageUrl?: string): string => {
   if (!imageUrl) return '';
   
   // Задаем имя облака
-  const cloudName = "postlearn"; // Ваше имя облака в Cloudinary
+  const cloudName = "dpwwnhwbg"; // Ваше имя облака в Cloudinary
   
   // Если URL уже абсолютный (http/https)
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
   
-  // Если путь в формате /uploads/postlearn/filename
-  if (imageUrl && imageUrl.includes('/uploads/postlearn/')) {
+  // Если путь в формате /uploads/dpwwnhwbg/filename
+  if (imageUrl && imageUrl.includes('/uploads/dpwwnhwbg/')) {
     // Извлекаем имя файла
     const fileId = imageUrl.split('/').pop();
     if (!fileId) return ''; // Защита от ошибок

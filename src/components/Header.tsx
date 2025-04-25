@@ -31,7 +31,7 @@ const Header = () => {
 
   const getAvatarUrl = () => {
     // Задаем имя облака
-    const cloudName = "postlearn"; // Имя облака Cloudinary
+    const cloudName = "dpwwnhwbg"; // Имя облака Cloudinary
     
     if (user?.avatarUrl) {
         // Если URL уже абсолютный
@@ -40,7 +40,7 @@ const Header = () => {
         }
         
         // Если путь в формате /uploads/postlearn/filename
-        if (user.avatarUrl.includes('/uploads/postlearn/')) {
+        if (user.avatarUrl.includes('/uploads/dpwwnhwbg/')) {
             const fileId = user.avatarUrl.split('/').pop();
             if (!fileId) return undefined; // Защита от ошибок
             

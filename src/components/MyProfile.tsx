@@ -91,7 +91,7 @@ const MyProfile = () => {
         });
         
         // Получим имя вашего облака Cloudinary
-        const cloudName = "postlearn"; // Жестко закодированное значение
+        const cloudName = "dpwwnhwbg"; // Жестко закодированное значение
         
         // 1. Локальное превью имеет приоритет
         if (previewUrl?.startsWith('blob:')) {
@@ -113,8 +113,8 @@ const MyProfile = () => {
                 return avatarUrl;
             }
             
-            // Если путь в формате /uploads/postlearn/filename
-            if (avatarUrl.includes('/uploads/postlearn/')) {
+            // Если путь в формате /uploads/dpwwnhwbg/filename
+            if (avatarUrl.includes('/uploads/dpwwnhwbg/')) {
                 // Извлекаем имя файла
                 const fileId = avatarUrl.split('/').pop();
                 // Формируем прямой URL Cloudinary - без версии v1/
@@ -137,8 +137,8 @@ const MyProfile = () => {
                 return user.avatarUrl;
             }
             
-            // Если путь в формате /uploads/postlearn/filename
-            if (user.avatarUrl.includes('/uploads/postlearn/')) {
+            // Если путь в формате /uploads/dpwwnhwbg/filename
+            if (user.avatarUrl.includes('/uploads/dpwwnhwbg/')) {
                 // Извлекаем имя файла
                 const fileId = user.avatarUrl.split('/').pop();
                 // Формируем прямой URL Cloudinary - без версии v1/
