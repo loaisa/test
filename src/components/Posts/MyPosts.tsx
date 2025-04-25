@@ -1,4 +1,4 @@
-import { Skeleton, Typography } from "@mui/material";
+import { Container, Skeleton, Typography } from "@mui/material";
 import { AppDispatch, RootState } from "../../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
@@ -66,10 +66,11 @@ const MyPosts = () => {
   }
 
   return (
-    <Box sx={{ width: '90%'}}>
+    <Container maxWidth="lg">
+    <Box sx={{ width: '100%'}}>
       <Button sx={{margin: 4, float: 'right'}} variant="contained" color="success"> <RouterLink to="/create-post" style={{textDecoration: 'none', color: 'white'}}>Создать пост</RouterLink></Button>
       {sortedPosts.length > 0 ? sortedPosts.map((post) => (
-        <Card sx={{ width: '100%', margin: 4, gap: 4, backgroundColor: '#fff2f2' }} key={post._id}>
+        <Card sx={{ width: '100%', gap: 4, backgroundColor: '#fff2f2', marginBottom: 4 }} key={post._id}>
           <CardHeader
 
             title={post.title}
@@ -111,6 +112,7 @@ const MyPosts = () => {
       )): <Typography sx={{margin: 4}} variant="h6">Постов нет</Typography> }
 
     </Box>
+    </Container>
   )
 }
 
