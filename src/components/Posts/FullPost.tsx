@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardMedia, Typography, CircularProgress, Box, Container, IconButton, CardActions, TextField, Button, Divider, List, ListItem, ListItemText, Avatar } from "@mui/material";
+import { Card, CardContent, CardHeader, Typography, CircularProgress, Box, Container, IconButton, TextField, Button, Divider, List, ListItem, ListItemText, Avatar } from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from '../../store/store';
@@ -87,7 +87,7 @@ const FullPost = React.memo(() => {
     const { id } = useParams<string>();
     const posts = useSelector((state: RootState) => state.posts.posts);
     const loading = useSelector((state: RootState) => state.posts.loading)
-    const [error, setError] = useState<string | null>(null);
+
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     
@@ -111,14 +111,6 @@ const FullPost = React.memo(() => {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <Typography color="error">{error}</Typography>
             </Box>
         );
     }

@@ -1,4 +1,4 @@
-import { Container, Skeleton, Typography } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { AppDispatch, RootState } from "../../store/store";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";

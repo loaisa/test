@@ -23,19 +23,20 @@ mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log(err);
 }); //Подключились к MongoDB    
 
-app.listen(3001, (err) => {
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, (err) => {
     if (err) {
         console.log(err);
     } else {
-        console.log('Server is running on port 3001');
+        console.log(`Server is running on port ${PORT}`);
     }
 }); //Запустили сервер на порту 
 
 app.use(cors({
-    origin: `*`,
-    // credentials: true,
-    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    // allowedHeaders: ['Content-Type', 'Authorization']
+    origin: process.env.FRONTEND_URL || `*`,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 }));
 const upload = multer({ 
     storage: multer.diskStorage({ //конфигурация для multer
