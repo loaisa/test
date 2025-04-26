@@ -152,17 +152,23 @@ export const postApi = {
     },
     uploadImage: async (formData: FormData) => {
         try {
+            console.log('Загрузка изображения на сервер...');
             const response = await api.post(`/uploads`, formData)
+            console.log('Ответ от сервера после загрузки:', response.data);
             return response.data;
         } catch (error: any) {
+            console.error('Ошибка при загрузке изображения:', error);
             throw error;
         }
     },
     deleteImage: async (filename: string) => {
         try {
+            console.log('Удаление изображения с сервера:', filename);
             const response = await api.delete(`/uploads/${filename}`);
+            console.log('Ответ от сервера после удаления:', response.data);
             return response.data;
         } catch (error: any) {
+            console.error('Ошибка при удалении изображения:', error);
             throw error;
         }
     }

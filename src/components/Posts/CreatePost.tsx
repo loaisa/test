@@ -184,12 +184,34 @@ const CreatePost: React.FC = () => {
     if (!uploadedImageUrl) return;  // Если нет загруженного изображения, выходим
 
     try {
-      // Извлекаем имя файла из URL
-      const filename = uploadedImageUrl.split('/uploads/').pop();
-      if (!filename) {
-        throw new Error('Неверный формат URL изображения');
+      let filename = '';
+      
+      console.log('Удаляем изображение по URL:', uploadedImageUrl);
+      
+      // Проверяем различные форматы URL
+      if (uploadedImageUrl.includes('res.cloudinary.com')) {
+        // Для Cloudinary URL вида https://res.cloudinary.com/cloud_name/image/upload/...
+        // Извлекаем только последний сегмент пути - имя файла
+        const segments = uploadedImageUrl.split('/');
+        filename = segments[segments.length - 1];
+        
+        // Удаляем расширение файла, если оно есть (Cloudinary использует ID без расширения)
+        filename = filename.split('.')[0];
+      } else if (uploadedImageUrl.includes('/uploads/')) {
+        // Для URL вида /uploads/filename или http://...uploads/filename
+        filename = uploadedImageUrl.split('/uploads/').pop() || '';
+      } else {
+        // Для всех других случаев просто берем последний сегмент пути
+        const segments = uploadedImageUrl.split('/');
+        filename = segments[segments.length - 1];
       }
 
+      if (!filename) {
+        throw new Error('Не удалось извлечь имя файла из URL: ' + uploadedImageUrl);
+      }
+
+      console.log('Отправляем запрос на удаление файла с ID:', filename);
+      
       // Удаляем изображение с сервера
       await postApi.deleteImage(filename);
 

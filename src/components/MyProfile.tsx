@@ -84,11 +84,7 @@ const MyProfile = () => {
         };
 
     const getAvatarUrl = () => {
-        console.log('Getting avatar URL with:', {
-            previewUrl,
-            avatarUrl,
-            userAvatar: user?.avatarUrl
-        });
+
         
         // Получим имя вашего облака Cloudinary
         const cloudName = "dpwwnhwbg"; // Жестко закодированное значение
