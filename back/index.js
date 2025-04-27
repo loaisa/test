@@ -34,8 +34,7 @@ const upload = multer({ storage });
 
 const app = express(); //создали сервер
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename); //для работы с путями в ES модулях
+
 
 mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
@@ -110,11 +109,27 @@ app.post('/uploads', checkAuth, upload.single('image'), (req, res) => {
 // Эндпоинт для удаления изображения
 app.delete('/uploads/:filename', checkAuth, async (req, res) => {
     try {
-      const filename = req.params.filename;
-      console.log('Trying to delete file from Cloudinary:', filename); // Лог для отладки
+      let filename = req.params.filename;
+      console.log('Trying to delete file from Cloudinary. Original filename:', filename); // Лог для отладки
+      
+      // Если filename содержит путь к папке postlearn, извлекаем только имя файла
+      if (filename.includes('postlearn/')) {
+        filename = filename.split('postlearn/').pop();
+        console.log('Extracted filename from path:', filename);
+      }
+      
+      // Если в запросе указан путь с .png, .jpg и т.д., удаляем расширение
+      if (filename.includes('.')) {
+        filename = filename.split('.')[0];
+        console.log('Removed extension, using filename:', filename);
+      }
+      
+      // Добавляем префикс папки, если он отсутствует
+      const publicId = filename.includes('postlearn/') ? filename : `postlearn/${filename}`;
+      console.log('Using public ID for Cloudinary delete:', publicId);
       
       // Удаляем файл из Cloudinary
-      const result = await cloudinary.uploader.destroy(filename);
+      const result = await cloudinary.uploader.destroy(publicId);
       console.log('Cloudinary delete result:', result); // Лог для отладки
       
       if (result.result === 'ok') {

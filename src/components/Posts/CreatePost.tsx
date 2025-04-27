@@ -44,14 +44,14 @@ const getImageUrl = (imageUrl?: string): string => {
     return imageUrl;
   }
   
-  // Если путь в формате /uploads/dpwwnhwbg/filename
-  if (imageUrl && imageUrl.includes('/uploads/dpwwnhwbg/')) {
+  // Если путь в формате /uploads/postlearn/filename или /uploads/filename
+  if (imageUrl && imageUrl.includes('/uploads/')) {
     // Извлекаем имя файла
     const fileId = imageUrl.split('/').pop();
     if (!fileId) return ''; // Защита от ошибок
     
-    // Формируем прямой URL Cloudinary без v1/
-    const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
+    // Cloudinary URL с папкой postlearn
+    const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
     return cloudinaryUrl;
   }
   
@@ -184,8 +184,25 @@ const CreatePost: React.FC = () => {
     if (!uploadedImageUrl) return;  // Если нет загруженного изображения, выходим
 
     try {
-      // Извлекаем имя файла из URL
-      const filename = uploadedImageUrl.split('/uploads/').pop();
+      let filename;
+      
+      // Проверяем, является ли URL URL-ом Cloudinary
+      if (uploadedImageUrl.includes('cloudinary.com')) {
+        // Для Cloudinary URL извлекаем только имя файла без расширения
+        // URL вида: https://res.cloudinary.com/dpwwnhwbg/image/upload/v1745711870/postlearn/lmzyemoxefeeua89uspx.png
+        const parts = uploadedImageUrl.split('/');
+        // Получаем последнюю часть URL (lmzyemoxefeeua89uspx.png)
+        const lastPart = parts[parts.length - 1];
+        // Удаляем расширение файла
+        filename = lastPart.split('.')[0];
+        
+        console.log('Extracting Cloudinary filename:', filename);
+      } else {
+        // Для локальных URL извлекаем путь после /uploads/
+        filename = uploadedImageUrl.split('/uploads/').pop();
+        console.log('Extracting local filename:', filename);
+      }
+      
       console.log(filename)
       if (!filename) {
         throw new Error('Неверный формат URL изображения');

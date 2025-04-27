@@ -24,14 +24,14 @@ const getImageUrl = (imageUrl?: string): string => {
         return imageUrl;
     }
     
-    // Если путь в формате /uploads/dpwwnhwbg/filename
-    if (imageUrl && imageUrl.includes('/uploads/dpwwnhwbg/')) {
+    // Если путь в формате /uploads/postlearn/filename или /uploads/filename
+    if (imageUrl && imageUrl.includes('/uploads/')) {
         // Извлекаем имя файла
         const fileId = imageUrl.split('/').pop();
         if (!fileId) return ''; // Защита от ошибок
         
-        // Формируем прямой URL Cloudinary без v1/
-        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
+        // Cloudinary URL с папкой postlearn
+        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
         return cloudinaryUrl;
     }
     

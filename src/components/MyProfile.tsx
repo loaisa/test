@@ -84,7 +84,6 @@ const MyProfile = () => {
         };
 
     const getAvatarUrl = () => {
-
         
         // Получим имя вашего облака Cloudinary
         const cloudName = "dpwwnhwbg"; // Жестко закодированное значение
@@ -109,13 +108,13 @@ const MyProfile = () => {
                 return avatarUrl;
             }
             
-            // Если путь в формате /uploads/dpwwnhwbg/filename
-            if (avatarUrl.includes('/uploads/dpwwnhwbg/')) {
+            // Если путь в формате /uploads/postlearn/filename или /uploads/filename
+            if (avatarUrl.includes('/uploads/')) {
                 // Извлекаем имя файла
                 const fileId = avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary - без версии v1/
-                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
-                console.log('Created Cloudinary URL from path:', cloudinaryUrl);
+                // Формируем прямой URL Cloudinary с папкой postlearn
+                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
+                console.log('Created Cloudinary URL with folder:', cloudinaryUrl);
                 return cloudinaryUrl;
             }
             
@@ -133,13 +132,13 @@ const MyProfile = () => {
                 return user.avatarUrl;
             }
             
-            // Если путь в формате /uploads/dpwwnhwbg/filename
-            if (user.avatarUrl.includes('/uploads/dpwwnhwbg/')) {
+            // Если путь в формате /uploads/postlearn/filename или /uploads/filename
+            if (user.avatarUrl.includes('/uploads/')) {
                 // Извлекаем имя файла
                 const fileId = user.avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary - без версии v1/
-                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${fileId}`;
-                console.log('Created Cloudinary URL from user path:', cloudinaryUrl);
+                // Формируем прямой URL Cloudinary с папкой postlearn
+                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
+                console.log('Created Cloudinary URL with folder:', cloudinaryUrl);
                 return cloudinaryUrl;
             }
             

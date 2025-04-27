@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { CreatePostData } from '../types/types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://friendsposts.up.railway.app';
-
+// const API_URL = process.env.REACT_APP_API_URL || 'https://friendsposts.up.railway.app';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 const api = axios.create({
     baseURL: API_URL,
 });
@@ -160,7 +160,22 @@ export const postApi = {
     },
     deleteImage: async (filename: string) => {
         try {
-            const response = await api.delete(`/uploads/${filename}`);
+            // Удаляем любые URL префиксы или пути, оставляя только имя файла
+            let cleanFilename = filename;
+            
+            // Если это полный URL, извлекаем только имя файла
+            if (filename.includes('://')) {
+                const parts = filename.split('/');
+                cleanFilename = parts[parts.length - 1];
+                
+                // Удаляем расширение файла, если оно есть
+                if (cleanFilename.includes('.')) {  
+                    cleanFilename = cleanFilename.split('.')[0]; //
+                }
+            }
+            
+            console.log('Sending delete request for file:', cleanFilename);
+            const response = await api.delete(`/uploads/${cleanFilename}`);
             return response.data;
         } catch (error: any) {
             throw error;
