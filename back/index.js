@@ -8,9 +8,6 @@ import { createPost, getAll, getOne, remove, update, getUserPosts, getTags, togg
 import checkAuth from './utils/checkAuth.js' // импортируем для проверки авторизации
 import multer from 'multer' // импортируем для загрузки изображений
 import { validationErrors } from './utils/VallidationErros.js' // импортируем для проверки валидации
-import path from 'path'; // импортируем для работы с путями
-import fs from 'fs'; // импортируем для работы с файлами
-import { fileURLToPath } from 'url';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 

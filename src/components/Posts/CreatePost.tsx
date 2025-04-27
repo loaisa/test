@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { postApi } from '../../services/api'
@@ -11,7 +11,8 @@ import {
   Typography,
   Paper,
   IconButton,
-  styled
+  styled,
+  CircularProgress
 } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { createPost } from '../../store/slices/postsSlice';
@@ -35,26 +36,26 @@ const VisuallyHiddenInput = styled('input')({
 // Функция для получения корректного URL изображения
 const getImageUrl = (imageUrl?: string): string => {
   if (!imageUrl) return '';
-  
+
   // Задаем имя облака
   const cloudName = "dpwwnhwbg"; // Ваше имя облака в Cloudinary
-  
+
   // Если URL уже абсолютный (http/https)
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
-  
+
   // Если путь в формате /uploads/postlearn/filename или /uploads/filename
   if (imageUrl && imageUrl.includes('/uploads/')) {
     // Извлекаем имя файла
     const fileId = imageUrl.split('/').pop();
     if (!fileId) return ''; // Защита от ошибок
-    
+
     // Cloudinary URL с папкой postlearn
     const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
     return cloudinaryUrl;
   }
-  
+
   // Иначе добавляем API_URL
   return `${API_URL}${imageUrl}`;
 };
@@ -63,9 +64,11 @@ const CreatePost: React.FC = () => {
 
   const { id } = useParams()
   const [error, setError] = useState('')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const isEdit = Boolean (id)
-  
+  const [uploadProgress, setUploadProgress] = useState(0); // Новое состояние для отслеживания прогресса
+  const isEdit = Boolean(id)
+  const [isLoading, setIsLoading] = useState(false)
+  // Добавляем ref для input файла
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Добавляем состояние для хранения URL загруженного изображения
@@ -84,6 +87,7 @@ const CreatePost: React.FC = () => {
 
   // Основная функция отправки формы
   const onSubmit = async (data: any) => {
+    setIsLoading(true)
     try {
       // Формируем объект данных поста
       const postData = {
@@ -99,7 +103,7 @@ const CreatePost: React.FC = () => {
         return; // Прерываем выполнение функции
       }
 
-      const response = isEdit && id ? await dispatch(updatePost({id, data: postData })) : await dispatch(createPost(postData));
+      const response = isEdit && id ? await dispatch(updatePost({ id, data: postData })) : await dispatch(createPost(postData));
 
       // Проверка на rejected status
       if (response.meta.requestStatus === 'rejected') {
@@ -112,7 +116,7 @@ const CreatePost: React.FC = () => {
       setValue('text', '');
       setValue('tags', '');
       setUploadedImageUrl(null);
-      setPreviewUrl(null);
+
       setError('');
 
       // Перенаправляем только при успешном создании
@@ -124,102 +128,132 @@ const CreatePost: React.FC = () => {
     }
   };
 
-  // Функция загрузки изображения на сервер
-  const handleImageUpload = async (file: File) => {
-    const formData = new FormData();  // Создаем объект FormData для отправки файла
-    formData.append('image', file);   // Добавляем файл в FormData
-
-    try {
-
-      // Отправляем изображение на сервер
-      const response = await postApi.uploadImage(formData);
-    
-
-      if (response && response.url) {
-        // Если загрузка успешна, сохраняем URL изображения
-        setUploadedImageUrl(response.url);
-        setValue('imageUrl', response.url);
-        return response.url;
-      } else {
-        throw new Error('Неверный формат ответа от сервера');
-      }
-    } catch (err: any) {
-      console.error('Error uploading image:', err);
-      setError(err.message || 'Ошибка при загрузке изображения');
-      throw err;
-    }
-  };
 
   // Обработчик изменения выбранного изображения
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) { // Проверяем, есть ли файлы в input
+    if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
 
-      // Проверка типа файла
-      if (!file.type.startsWith('image/')) {
-        setError('Пожалуйста, выберите файл изображения');
-        return;
-      }
-
-      // Проверка размера файла (10MB = 10 * 1024 * 1024 bytes)
-      const maxSize = 10 * 1024 * 1024;
-      if (file.size > maxSize) {
-        setError('Размер файла не должен превышать 10MB');
-        return;
-      }
-
-      const fileUrl = URL.createObjectURL(file);  // Создаем временный URL для превью
-      setPreviewUrl(fileUrl);  // Устанавливаем URL превью
       try {
-        // Загружаем изображение на сервер
-        await handleImageUpload(file);
+        // Проверки файла...
+        if (!file.type.startsWith('image/')) {
+          setError('Пожалуйста, выберите файл изображения');
+          return;
+        }
+
+        // Проверка размера...
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          setError('Размер файла не должен превышать 10MB');
+          return;
+        }
+
+        // Загружаем на сервер
+        setIsLoading(true);
+        setUploadProgress(0);
+        // Запускаем симуляцию прогресса
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            // Максимум 90% до завершения загрузки
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + Math.floor(Math.random() * 5) + 1;
+          });
+        }, 200);
+        const formData = new FormData();  // Создаем объект FormData для отправки файла
+        formData.append('image', file);   // Добавляем файл в FormData
+
+
+
+        // Отправляем изображение на сервер
+        const response = await postApi.uploadImage(formData);
+
+
+        if (response && response.url) {
+          // Очищаем интервал и устанавливаем 100%
+          clearInterval(progressInterval);
+          // Если загрузка успешна, сохраняем URL изображения
+          setUploadProgress(100);
+          setTimeout(() => {
+            setUploadedImageUrl(response.url);
+            setValue('imageUrl', response.url);
+            setUploadProgress(0);
+          }, 500)
+          console.log('Изображение успешно загружено на сервер:', response.url);
+          setError('')
+          return response.url;
+        } else {
+          throw new Error('Неверный формат ответа от сервера');
+        }
       } catch (err: any) {
-        setError(err.message);  // Показываем ошибку пользователю
+        setUploadProgress(0);
+        console.error('Ошибка при загрузке изображения:', err);
+        // Даже при ошибке загрузки на сервер, мы сохраняем превью
+        // чтобы пользователь мог удалить его и попробовать снова
+        setError(`Ошибка при загрузке на сервер: ${err.message || 'Неизвестная ошибка, попробуйте снова'}`);
+        // Сбрасываем input при ошибке, чтобы пользователь мог выбрать тот же файл снова
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } finally {
+        setIsLoading(false);
       }
     }
   };
-
   // Функция удаления загруженного изображения
   const handleDeleteImage = async () => {
-    if (!uploadedImageUrl) return;  // Если нет загруженного изображения, выходим
+    setIsLoading(true)
 
     try {
-      let filename;
-      
-      // Проверяем, является ли URL URL-ом Cloudinary
-      if (uploadedImageUrl.includes('cloudinary.com')) {
-        // Для Cloudinary URL извлекаем только имя файла без расширения
-        // URL вида: https://res.cloudinary.com/dpwwnhwbg/image/upload/v1745711870/postlearn/lmzyemoxefeeua89uspx.png
-        const parts = uploadedImageUrl.split('/');
-        // Получаем последнюю часть URL (lmzyemoxefeeua89uspx.png)
-        const lastPart = parts[parts.length - 1];
-        // Удаляем расширение файла
-        filename = lastPart.split('.')[0];
-        
-        console.log('Extracting Cloudinary filename:', filename);
+      if (uploadedImageUrl) {  // Если нет загруженного изображения, выходим
+        let filename;
+
+        // Проверяем, является ли URL URL-ом Cloudinary
+        if (uploadedImageUrl.includes('cloudinary.com')) {
+          // Для Cloudinary URL извлекаем только имя файла без расширения
+          // URL вида: https://res.cloudinary.com/dpwwnhwbg/image/upload/v1745711870/postlearn/lmzyemoxefeeua89uspx.png
+          const parts = uploadedImageUrl.split('/');
+          // Получаем последнюю часть URL (lmzyemoxefeeua89uspx.png)
+          const lastPart = parts[parts.length - 1];
+          // Удаляем расширение файла
+          filename = lastPart.split('.')[0];
+
+          console.log('Extracting Cloudinary filename:', filename);
+        } else {
+          // Для локальных URL извлекаем путь после /uploads/
+          filename = uploadedImageUrl.split('/uploads/').pop();
+          console.log('Extracting local filename:', filename);
+        }
+
+        console.log(filename)
+        if (!filename) {
+          throw new Error('Неверный формат URL изображения');
+        }
+
+        // Удаляем изображение с сервера
+        await postApi.deleteImage(filename);
       } else {
-        // Для локальных URL извлекаем путь после /uploads/
-        filename = uploadedImageUrl.split('/uploads/').pop();
-        console.log('Extracting local filename:', filename);
-      }
-      
-      console.log(filename)
-      if (!filename) {
-        throw new Error('Неверный формат URL изображения');
+        console.log('URL файла на сервере отсутствует, пропускаем удаление с сервера');
       }
 
-      // Удаляем изображение с сервера
-      await postApi.deleteImage(filename);
 
       // Очищаем состояния
-      setPreviewUrl(null);  // Удаляем превью
       setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
       setValue('imageUrl', '');  // Очищаем поле URL изображения в форме
       setError('');  // Очищаем сообщения об ошибках
+      setIsLoading(false)
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''; // Сбрасываем значение input
+      }
+
     } catch (err: any) {
       console.error('Error deleting image:', err);
       setError(err.message || 'Ошибка при удалении изображения');
     }
+
   };
 
   useEffect(() => {
@@ -230,8 +264,7 @@ const CreatePost: React.FC = () => {
           setValue('title', post.payload.title)
           setValue('text', post.payload.text)
           setValue('tags', post.payload.tags.join(', '))
-          setPreviewUrl(getImageUrl(post.payload.imageUrl))
-          setUploadedImageUrl(post.payload.imageUrl) 
+          setUploadedImageUrl(post.payload.imageUrl)
         } catch (err: any) {
           console.error('Ошибка получения поста:', err);
         }
@@ -267,7 +300,7 @@ const CreatePost: React.FC = () => {
         <Controller
           name="text"
           control={control}
-          rules={{ required: 'Текст поста обязателен' }}
+          rules={{ required: 'Текст поста обязателен', minLength: { value: 10, message: 'Текст поста должен содержать не менее 10 символов' } }}
           render={({ field }) => (
             <TextField
               {...field}
@@ -301,23 +334,62 @@ const CreatePost: React.FC = () => {
 
 
         <Box sx={{ mt: 2, mb: 2 }}>
+          {/* Кнопка загрузки с состоянием загрузки */}
           <Button
             component="label"
             variant="contained"
-            startIcon={<CloudUploadIcon />}
+            startIcon={!isLoading ? <CloudUploadIcon /> : null}
+            disabled={isLoading}
+            sx={{ position: 'relative' }}
           >
-            Загрузить изображение
+            {isLoading ? (
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <CircularProgress
+                  size={24}
+                  sx={{ mr: 1, color: 'white' }}
+                />
+                Загрузка...
+              </Box>
+            ) : (
+              'Загрузить изображение'
+            )}
             <VisuallyHiddenInput
+              ref={fileInputRef}
               type="file"
               onChange={handleImageChange}
               accept="image/*"
+              disabled={isLoading}
             />
           </Button>
 
-          {previewUrl && (
+          {/* Индикатор прогресса загрузки */}
+          {isLoading && !uploadedImageUrl && (
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Box sx={{
+                height: 10,
+                bgcolor: '#e0e0e0',
+                borderRadius: 5,
+                overflow: 'hidden'
+              }}>
+                <Box
+                  sx={{
+                    height: '100%',
+                    width: `${uploadProgress}%`,
+                    bgcolor: 'primary.main',
+                    transition: 'width 0.3s ease-in-out'
+                  }}
+                />
+              </Box>
+              <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                {uploadProgress}% загружено
+              </Typography>
+            </Box>
+          )}
+
+          {uploadedImageUrl && (
             <Box sx={{ mt: 2, position: 'relative' }}>
               <img
-                src={previewUrl}
+                src={getImageUrl(uploadedImageUrl)}
                 alt="Preview"
                 crossOrigin="anonymous"
                 style={{
@@ -326,6 +398,11 @@ const CreatePost: React.FC = () => {
                   objectFit: 'contain'
                 }}
               />
+              {isLoading && <CircularProgress sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0
+              }} />}
               <IconButton
                 sx={{
                   position: 'absolute',
@@ -358,9 +435,10 @@ const CreatePost: React.FC = () => {
             type="submit"
             variant="contained"
             color="primary"
-
+            disabled={isLoading}
           >
             {isEdit ? 'Сохранить' : 'Создать пост'}
+        
           </Button>
           <Button
             variant="outlined"
@@ -370,6 +448,7 @@ const CreatePost: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
     </Paper>
   );
 };
