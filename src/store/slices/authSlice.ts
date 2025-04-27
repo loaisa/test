@@ -1,6 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi, userApi } from '../../services/api';
 
+// Добавим новую функцию для получения базовых данных о пользователе из localStorage
+export const getUserFromLocalStorage = () => {
+    try {
+      const userData = localStorage.getItem('userData');
+      return userData ? JSON.parse(userData) : null;
+    } catch (e) {
+      console.error('Error parsing user data from localStorage:', e);
+      return null;
+    }
+  };
+
 export const fetchLogin = createAsyncThunk('auth/login', async (data: { email: string, password: string }) => { //логин пользователя
     const response = await authApi.login(data.email, data.password); //отправляем данные на сервер
     localStorage.setItem('token', response.token) //сохраняем токен в localStorage
@@ -40,7 +51,7 @@ type AuthState = {
     isAuth: boolean;
 }
 const initialState: AuthState = {
-    user: null,
+    user: getUserFromLocalStorage(), // Загружаем пользователя из localStorage
     token: null,
     loading: false,
     error: null,
@@ -67,6 +78,7 @@ const authSlice = createSlice({
                 state.token = action.payload.token; //сохраняем токен в state
                 localStorage.setItem('token', action.payload.token)
                 localStorage.setItem('isAuth', 'true')
+                localStorage.setItem('userData', JSON.stringify(action.payload)); // Сохраняем пользователя
                 state.isAuth = true; //устанавливаем isAuth в true
                 state.loading = false; //устанавливаем loading в false
                 state.user = action.payload; //сохраняем пользователя в state
@@ -83,6 +95,7 @@ const authSlice = createSlice({
             .addCase(fetchRegister.fulfilled, (state, action) => { //если запрос выполнен успешно
                 state.token = action.payload.token; //сохраняем токен в state
                 localStorage.setItem('token', action.payload.token)
+                localStorage.setItem('userData', JSON.stringify(action.payload)); // Сохраняем пользователя
                 state.isAuth = true; //устанавливаем isAuth в true
                 state.loading = false; //устанавливаем loading в false
                 state.user = action.payload; //сохраняем весь payload в sate.user
@@ -99,6 +112,7 @@ const authSlice = createSlice({
             .addCase(checkAuth.fulfilled, (state, action) => { //если запрос выполнен успешно
                 state.user = action.payload.user; //сохраняем пользователя в state
                 state.token = action.payload.token; //сохраняем токен в state
+                localStorage.setItem('userData', JSON.stringify(action.payload.user)); // Обновляем данные
                 state.isAuth = true; //устанавливаем isAuth в true
                 state.loading = false; //устанавливаем loading в false
             })
@@ -118,6 +132,8 @@ const authSlice = createSlice({
                 state.user = action.payload.user;
                 if (state.user) {
                     state.user.avatarUrl = action.payload.url;
+                     // Обновляем данные в localStorage
+                    localStorage.setItem('userData', JSON.stringify(state.user));
                 }
                 state.loading = false;
             })
