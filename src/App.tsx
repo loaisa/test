@@ -9,7 +9,7 @@ import FullPost from './components/Posts/FullPost';
 import MyPostsPage from './pages/MyPostsPage';
 import { Container } from '@mui/material';
 import { AppDispatch } from './store/store';
-import { checkAuth } from './store/slices/authSlice';
+import { checkAuth, setAuthState } from './store/slices/authSlice';
 import CreatePost from './components/Posts/CreatePost';
 import MyProfile from './components/MyProfile';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -18,7 +18,33 @@ function App() {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    dispatch(checkAuth());
+    // Проверяем наличие токена и данных пользователя в localStorage
+    const token = localStorage.getItem('token');
+    const userDataString = localStorage.getItem('userData');
+    // Если оба существуют, считаем пользователя авторизованным
+    // и тихо проверяем токен в фоновом режиме
+    if (token && userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        // Если данные корректны, устанавливаем состояние авторизации
+        if (userData) {
+          // Синхронно устанавливаем isAuth: true и данные пользователя
+          dispatch(setAuthState({
+            isAuth: true,
+            user: userData,
+            token: token
+          }));
+          
+          // И асинхронно проверяем актуальность токена
+          dispatch(checkAuth());
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        // Если данные повреждены, очищаем localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+      }
+    }
   }, [dispatch]);
 
   return (
@@ -30,7 +56,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/posts/:id" element={<FullPost />} />
-          
+
           {/* Защищенные маршруты */}
 
           <Route path="/my-posts" element={

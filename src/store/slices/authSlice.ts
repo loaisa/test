@@ -1,16 +1,16 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import { authApi, userApi } from '../../services/api';
 
 // Добавим новую функцию для получения базовых данных о пользователе из localStorage
 export const getUserFromLocalStorage = () => {
     try {
-      const userData = localStorage.getItem('userData');
-      return userData ? JSON.parse(userData) : null;
+        const userData = localStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
     } catch (e) {
-      console.error('Error parsing user data from localStorage:', e);
-      return null;
+        console.error('Error parsing user data from localStorage:', e);
+        return null;
     }
-  };
+};
 
 export const fetchLogin = createAsyncThunk('auth/login', async (data: { email: string, password: string }) => { //логин пользователя
     const response = await authApi.login(data.email, data.password); //отправляем данные на сервер
@@ -24,15 +24,43 @@ export const fetchRegister = createAsyncThunk('auth/register', async (data: { em
     return response; //возвращаем ответ от сервера
 })
 
-export const checkAuth = createAsyncThunk('auth/check', async () => { //проверка авторизации
-    const token = localStorage.getItem('token'); //получаем токен из localStorage
-    if (!token) {
-        throw new Error('No token found'); //если токена нет, то выбрасываем ошибку
-    }
+export const checkAuth = createAsyncThunk('auth/check', async (_, { dispatch }) => { //проверка авторизации
 
-    const response = await authApi.getMe();
-    return { user: response, token };
+    try {
+        const token = localStorage.getItem('token'); //получаем токен из localStorage
+        if (!token) {
+            throw new Error('No token found'); //если токена нет, то выбрасываем ошибку
+        }
+
+        // Используем кэшированные данные 
+        const cachedUser = localStorage.getItem('userData');
+        if (!cachedUser) {
+            throw new Error('No user data');
+        }
+        // Тихая асинхронная валидация токена
+        // Это не блокирует UI и происходит в фоновом режиме
+        authApi.getMe().then(
+            (userData) => {
+                // Обновляем данные пользователя, если они изменились
+                localStorage.setItem('userData', JSON.stringify(userData));
+                dispatch(updateUserData(userData));
+            },
+            (error) => {
+                // Если токен стал невалидным, выполняем выход
+                console.error('Token validation failed:', error);
+                dispatch(logout());
+            }
+        );
+        // Сразу возвращаем кэшированные данные для быстрого рендеринга
+        return { user: JSON.parse(cachedUser), token };
+    } catch (error) {
+        // Обработка ошибок
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+        throw new Error('Authentication failed');
+    }
 });
+const updateUserData = createAction<any>('auth/updateUserData');
 
 export const updateUserAvatar = createAsyncThunk(
     'auth/updateUserAvatar',
@@ -52,10 +80,11 @@ type AuthState = {
 }
 const initialState: AuthState = {
     user: getUserFromLocalStorage(), // Загружаем пользователя из localStorage
-    token: null,
+    token: localStorage.getItem('token'),
     loading: false,
     error: null,
-    isAuth: localStorage.getItem('isAuth') === 'true' ? true : false,
+    // Устанавливаем isAuth: true, если есть и токен, и данные пользователя
+    isAuth: !!localStorage.getItem('token') && !!JSON.parse(localStorage.getItem('userData') || 'null')
 }
 
 const authSlice = createSlice({
@@ -68,7 +97,18 @@ const authSlice = createSlice({
             state.isAuth = false; //удаляем isAuth из state
             localStorage.removeItem('token'); //удаляем токен из localStorage
             localStorage.removeItem('isAuth');
-        }
+        },
+        // Добавляем обработчик для тихого обновления данных
+        updateUserData: (state, action) => {
+            state.user = action.payload;
+        },
+        setAuthState: (state, action) => {
+            state.user = action.payload.user;
+            state.token = action.payload.token;
+            state.isAuth = action.payload.isAuth;
+            state.loading = false;
+        },
+
     },
     extraReducers: (builder) => {
         builder.addCase(fetchLogin.pending, (state) => { //если запрос выполняется
@@ -112,7 +152,6 @@ const authSlice = createSlice({
             .addCase(checkAuth.fulfilled, (state, action) => { //если запрос выполнен успешно
                 state.user = action.payload.user; //сохраняем пользователя в state
                 state.token = action.payload.token; //сохраняем токен в state
-                localStorage.setItem('userData', JSON.stringify(action.payload.user)); // Обновляем данные
                 state.isAuth = true; //устанавливаем isAuth в true
                 state.loading = false; //устанавливаем loading в false
             })
@@ -127,12 +166,12 @@ const authSlice = createSlice({
             .addCase(updateUserAvatar.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(updateUserAvatar.fulfilled, (state, action) => { 
+            .addCase(updateUserAvatar.fulfilled, (state, action) => {
                 // Обновляем аватар пользователя в state
                 state.user = action.payload.user;
                 if (state.user) {
                     state.user.avatarUrl = action.payload.url;
-                     // Обновляем данные в localStorage
+                    // Обновляем данные в localStorage
                     localStorage.setItem('userData', JSON.stringify(state.user));
                 }
                 state.loading = false;
@@ -144,5 +183,5 @@ const authSlice = createSlice({
     }
 })
 
-export const { logout } = authSlice.actions;
+export const { logout, setAuthState } = authSlice.actions;
 export default authSlice.reducer;
