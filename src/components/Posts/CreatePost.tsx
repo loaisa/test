@@ -59,7 +59,6 @@ const getImageUrl = (imageUrl?: string): string => {
   // Иначе добавляем API_URL
   return `${API_URL}${imageUrl}`;
 };
-
 const CreatePost: React.FC = () => {
 
   const { id } = useParams()

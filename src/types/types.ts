@@ -19,6 +19,7 @@ export interface Post {
     user: {
       _id: string;
       fullName: string;
+      avatarUrl: string;
     };
     imageUrl: string;
     createdAt: string;
