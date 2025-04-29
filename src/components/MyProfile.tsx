@@ -1,5 +1,5 @@
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store/store';
 import { Box, Avatar, Typography, Container, Button, styled, IconButton, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 
 import { postApi } from '../services/api';
 import { getImageUrl } from '../utils/GetImageUrl'
+import { updateUserAvatar } from '../store/slices/authSlice';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -27,7 +28,7 @@ const MyProfile = () => {
     const [error, setError] = useState<string | null>(null)
     const [isEdit, setIsEdit] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+    const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0); // Новое состояние для отслеживания прогресса
@@ -80,26 +81,30 @@ const MyProfile = () => {
                 formData.append('image', selectedFile);
 
                 // Отправляем изображение на сервер
-                const response = await postApi.uploadImage(formData);
 
+                const response = await dispatch(updateUserAvatar({
+                    userId: user._id,
+                    formData
+                }))
 
-                if (response && response.url) {
+                console.log(response)
+
+                if (response.payload.url) {
                     // Очищаем интервал и устанавливаем 100%
                     clearInterval(progressInterval);
                     // Если загрузка успешна, сохраняем URL изображения
                     setUploadProgress(100);
                     setTimeout(() => {
-                        setUploadedImageUrl(response.url);
+                        setUploadedImageUrl(response.payload.url);
                         setUploadProgress(0);
                     }, 500)
-                    console.log('Изображение успешно загружено на сервер:', response.url);
+                    console.log('Изображение успешно загружено на сервер:', response.payload.url);
                     setError('')
                     setIsEdit(false);
-                    return response.url;
+                    return response.payload.url;
                 } else {
                     throw new Error('Неверный формат ответа от сервера');
                 }
-      setIsEdit(false);
             } catch (err: any) {
                 setUploadProgress(0);
                 console.error('Ошибка при загрузке изображения:', err);
@@ -108,11 +113,11 @@ const MyProfile = () => {
                 setError(`Ошибка при загрузке на сервер: ${err.message || 'Неизвестная ошибка, попробуйте снова'}`);
                 // Сбрасываем input при ошибке, чтобы пользователь мог выбрать тот же файл снова
                 if (fileInputRef.current) {
-                  fileInputRef.current.value = '';
+                    fileInputRef.current.value = '';
                 }
-              } finally {
+            } finally {
                 setIsLoading(false);
-              }
+            }
         } else {
             // Если изображение не выбрано, просто закрываем режим редактирования
             setIsEdit(false);
