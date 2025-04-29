@@ -10,35 +10,8 @@ import { fetchPosts, togglePostLike } from '../../store/slices/postsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { Link as RouterLink } from 'react-router-dom';
 import { Post } from '../../types/types';
+import {getImageUrl} from '../../utils/GetImageUrl'
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-// Добавим функцию для получения корректного URL изображения
-const getImageUrl = (imageUrl?: string): string => {
-  if (!imageUrl) return '';
-
-  // Задаем имя облака
-  const cloudName = "dpwwnhwbg"; // Ваше имя облака в Cloudinary
-
-  // Если URL уже абсолютный (http/https)
-  if (imageUrl.startsWith('http')) {
-    return imageUrl;
-  }
-
-  // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-  if (imageUrl && imageUrl.includes('/uploads/')) {
-    // Извлекаем имя файла
-    const fileId = imageUrl.split('/').pop();
-    if (!fileId) return ''; // Защита от ошибок
-
-    // Cloudinary URL с папкой postlearn
-    const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-    return cloudinaryUrl;
-  }
-
-  // Иначе добавляем API_URL
-  return `${API_URL}${imageUrl}`;
-};
 
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }}>

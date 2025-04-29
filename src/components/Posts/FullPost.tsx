@@ -6,36 +6,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchOnePost, togglePostLike, addComment } from "../../store/slices/postsSlice";
 import { Comment } from "../../types/types";
+import { getImageUrl } from "../../utils/GetImageUrl";
 
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-// Функция для получения корректного URL изображения
-const getImageUrl = (imageUrl?: string): string => {
-    if (!imageUrl) return '';
-    
-    // Задаем имя облака
-    const cloudName = "dpwwnhwbg"; // Имя вашего Cloudinary облака
-    
-    // Если URL уже абсолютный (http/https)
-    if (imageUrl.startsWith('http')) {
-        return imageUrl;
-    }
-    
-    // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-    if (imageUrl && imageUrl.includes('/uploads/')) {
-        // Извлекаем имя файла
-        const fileId = imageUrl.split('/').pop();
-        if (!fileId) return ''; // Защита от ошибок
-        
-        // Cloudinary URL с папкой postlearn
-        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-        return cloudinaryUrl;
-    }
-    
-    // Иначе добавляем API_URL
-    return `${API_URL}${imageUrl}`;
-};
 
 // Выносим форму комментариев в отдельный компонент
 const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: boolean }) => {
@@ -44,10 +17,10 @@ const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: 
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!commentText.trim() || !postId) return;
-        
-        dispatch(addComment({id: postId, text: commentText}));
+
+        dispatch(addComment({ id: postId, text: commentText }));
         setCommentText(''); // Сразу очищаем поле ввода
     }, [postId, commentText, dispatch]);
 
@@ -63,9 +36,9 @@ const CommentForm = React.memo(({ postId, loading }: { postId: string, loading: 
                 placeholder="Напишите комментарий..."
                 sx={{ mb: 2 }}
             />
-            <Button 
-                type="submit" 
-                variant="contained" 
+            <Button
+                type="submit"
+                variant="contained"
                 disabled={!commentText.trim() || loading}
             >
                 {loading ? "Отправка..." : "Отправить"}
@@ -102,12 +75,12 @@ const CommentItem = React.memo(({ comment }: { comment: Comment }) => (
 ));
 
 // Компонент для отображения списка комментариев
-const CommentsList = React.memo(({ comments }: { comments: Comment[] }) =>(    
-   <List>
+const CommentsList = React.memo(({ comments }: { comments: Comment[] }) => (
+    <List>
         {comments.map((comment) => (
             <CommentItem key={comment._id} comment={comment} />
         ))}
-    </List>  
+    </List>
 ))
 
 const FullPost = React.memo(() => {
@@ -115,9 +88,10 @@ const FullPost = React.memo(() => {
     const posts = useSelector((state: RootState) => state.posts.posts);
     const loading = useSelector((state: RootState) => state.posts.loading)
 
+
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
-    
+
     useEffect(() => {
         if (id) {
             dispatch(fetchOnePost(id)); // Диспатчим экшен для получения поста
@@ -125,7 +99,7 @@ const FullPost = React.memo(() => {
     }, [id, dispatch]);
 
     // Используем useMemo для нахождения поста
-    const post = useMemo(() => 
+    const post = useMemo(() =>
         posts.find((p) => p._id === id),
         [posts, id]
     );
@@ -157,11 +131,11 @@ const FullPost = React.memo(() => {
                     subheader={new Date(post.createdAt).toLocaleDateString()}
                 />
                 <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
-                    <img 
-                        src={getImageUrl(post.imageUrl)} 
-                        alt={post.title} 
+                    <img
+                        src={getImageUrl(post.imageUrl)}
+                        alt={post.title}
                         crossOrigin="anonymous"
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 </Box>
                 <CardContent>
@@ -175,30 +149,30 @@ const FullPost = React.memo(() => {
                         Просмотров: {post.viewsCount}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
-                        <IconButton 
-                          aria-label="add to favorites" 
-                          onClick={() => handleToggleLike(post._id)}
-                          sx={{ 
-                            '&:hover': {
-                              '& .MuiSvgIcon-root': {
-                                color: 'red'
-                              }
-                            }
-                          }}
+                        <IconButton
+                            aria-label="add to favorites"
+                            onClick={() => handleToggleLike(post._id)}
+                            sx={{
+                                '&:hover': {
+                                    '& .MuiSvgIcon-root': {
+                                        color: 'red'
+                                    }
+                                }
+                            }}
                         >
-                          <FavoriteIcon sx={{ 
-                            color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
-                            transition: 'color 0.3s ease'
-                          }} />
+                            <FavoriteIcon sx={{
+                                color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
+                                transition: 'color 0.3s ease'
+                            }} />
                         </IconButton>
                         <Typography variant="body2" color="text.secondary">
-                          {post.likesCount || ''}
+                            {post.likesCount || ''}
                         </Typography>
-                      </Box>
+                    </Box>
                 </CardContent>
             </Card>
 
-        
+
             <Card sx={{ padding: 2, backgroundColor: '#fff2f2' }}>
                 <Typography variant="h6" gutterBottom>
                     Комментарии ({post.comments?.length || 0})

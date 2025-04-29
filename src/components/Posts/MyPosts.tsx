@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardMedia, Box, Button } from "@mui/mate
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { deletePost } from "../../store/slices/postsSlice";
 import { Post } from "../../types/types";
-const API_URL = process.env.REACT_APP_API_URL;
+import {getImageUrl} from '../../utils/GetImageUrl'
 
+const API_URL = process.env.REACT_APP_API_URL;
 
 const MyPosts = () => {
   const { user, loading: authLoading } = useSelector((state: RootState) => state.auth);
@@ -62,32 +63,6 @@ const MyPosts = () => {
     getUserPosts();
   }, [user, authLoading, authChecked, dispatch]);
 
-  const getImageUrl = (imageUrl?: string): string => {
-    if (!imageUrl) return '';
-    
-    // Задаем имя облака
-    const cloudName = "dpwwnhwbg"; // Имя вашего Cloudinary облака  
-    
-    // Если URL уже абсолютный (http/https)
-    if (imageUrl.startsWith('http')) {
-        return imageUrl;
-    } 
-
-    // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-    if (imageUrl && imageUrl.includes('/uploads/')) {
-        // Извлекаем имя файла
-        const fileId = imageUrl.split('/').pop();
-        if (!fileId) return ''; // Защита от ошибок 
-        
-        // Cloudinary URL с папкой postlearn
-        const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-        return cloudinaryUrl;
-    }
-    
-    // Иначе добавляем API_URL
-    return `${API_URL}${imageUrl}`;
-  };
-  
 
   const handleDelete = (id: string) => {
     const confirm = window.confirm('Удалить пост?');

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Paper, Typography, Chip, Stack, Card, CardActions, Skeleton, CardContent, CardHeader, Button, Box } from "@mui/material";
+import { Paper, Typography, Chip, Stack, Card, Skeleton, CardContent, CardHeader, Button } from "@mui/material";
 import { postApi } from "../services/api";
 
 interface Tag {

@@ -17,8 +17,9 @@ import {
 import { useDispatch } from 'react-redux';
 import { createPost } from '../../store/slices/postsSlice';
 import { useNavigate, useParams } from 'react-router-dom';
+import {getImageUrl} from '../../utils/GetImageUrl'
 
-const API_URL = process.env.REACT_APP_API_URL;
+
 
 // Стилизованный компонент для input type="file"
 const VisuallyHiddenInput = styled('input')({
@@ -33,32 +34,6 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-// Функция для получения корректного URL изображения
-const getImageUrl = (imageUrl?: string): string => {
-  if (!imageUrl) return '';
-
-  // Задаем имя облака
-  const cloudName = "dpwwnhwbg"; // Ваше имя облака в Cloudinary
-
-  // Если URL уже абсолютный (http/https)
-  if (imageUrl.startsWith('http')) {
-    return imageUrl;
-  }
-
-  // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-  if (imageUrl && imageUrl.includes('/uploads/')) {
-    // Извлекаем имя файла
-    const fileId = imageUrl.split('/').pop();
-    if (!fileId) return ''; // Защита от ошибок
-
-    // Cloudinary URL с папкой postlearn
-    const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-    return cloudinaryUrl;
-  }
-
-  // Иначе добавляем API_URL
-  return `${API_URL}${imageUrl}`;
-};
 const CreatePost: React.FC = () => {
 
   const { id } = useParams()

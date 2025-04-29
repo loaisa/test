@@ -11,7 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-
+import {getImageUrl} from '../utils/GetImageUrl'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
@@ -20,7 +20,6 @@ import { RootState } from '../store/store';
 const pages = ['Главная'];
 const settings = ['Профиль', 'Мои посты', 'Выйти'];
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 const Header = () => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -29,34 +28,7 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const getAvatarUrl = () => {
-    if (!user) return undefined;
 
-    // Задаем имя облака
-    const cloudName = "dpwwnhwbg"; // Имя вашего Cloudinary облака
-
-    // Если URL пустой, вернем undefined
-    if (!user.avatarUrl) return undefined;
-
-    // Если URL уже абсолютный
-    if (user.avatarUrl.startsWith('http')) {
-      return user.avatarUrl;
-    }
-
-    // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-    if (user.avatarUrl.includes('/uploads/')) {
-      // Извлекаем имя файла
-      const fileId = user.avatarUrl.split('/').pop();
-      if (!fileId) return undefined;
-
-      // Cloudinary URL с папкой postlearn
-      const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-      return cloudinaryUrl;
-    }
-
-    // Иначе добавляем API_URL
-    return `${API_URL}${user.avatarUrl}`;
-  };
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -144,7 +116,7 @@ const Header = () => {
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar 
                     alt={user?.fullName || "User"} 
-                    src={getAvatarUrl()} 
+                    src={getImageUrl(user.avatarUrl)} 
                     imgProps={{ crossOrigin: "anonymous" }}
                   />
                 </IconButton>

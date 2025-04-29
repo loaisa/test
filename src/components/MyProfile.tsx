@@ -1,11 +1,12 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store/store';
-import { Box, Avatar, Typography, Container, Button, styled } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
+import { Box, Avatar, Typography, Container, Button, styled, IconButton, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
-import { updateUserAvatar } from '../store/slices/authSlice';
+import { postApi } from '../services/api';
+import { getImageUrl } from '../utils/GetImageUrl'
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -18,185 +19,268 @@ const VisuallyHiddenInput = styled('input')({
     whiteSpace: 'nowrap',
     width: 1,
 });
-const API_URL = process.env.REACT_APP_API_URL;
 
 const MyProfile = () => {
     const { user } = useSelector((state: RootState) => state.auth);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-    const dispatch = useDispatch<AppDispatch>();
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>('');
+
     const [error, setError] = useState<string | null>(null)
     const [isEdit, setIsEdit] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatarUrl || null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
- 
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isLoading, setIsLoading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState(0); // Новое состояние для отслеживания прогресса
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Добавляем состояние для хранения URL загруженного изображения
 
     // Обработчик выбора файла - только создает превью, но не отправляет на сервер
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) { 
+        if (event.target.files && event.target.files[0]) {
             const file = event.target.files[0];
-            
+
+            if (!file.type.startsWith('image/')) {
+                setError('Пожалуйста, выберите файл изображения');
+                return;
+            }
+
+            // Проверка размера...
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                setError('Размер файла не должен превышать 10MB');
+                return;
+            }
+
             // Сохраняем файл для последующей отправки
             setSelectedFile(file);
-            
+
             // Создаем превью сразу после выбора файла
-            const fileUrl = URL.createObjectURL(file);  
-            setPreviewUrl(fileUrl);
+            const fileUrl = URL.createObjectURL(file);
+            setAvatarUrl(fileUrl);
         }
     };
-        // Отправка изображения на сервер при сохранении профиля
-        const handleSaveProfile = async () => {
-            if (selectedFile && user?._id) {
-                try {
-                    const formData = new FormData();
-                    formData.append('image', selectedFile);
-                    
-                    // Отправляем изображение только при сохранении
-                    const resultAction = await dispatch(updateUserAvatar({ userId: user._id, formData }));
+    const handleUploadImage = async () => {
+        if (selectedFile && user?._id) {
 
-                    // Получаем результат из action
-                    if (updateUserAvatar.fulfilled.match(resultAction)) { //проверят состояние запроса
-                        const result = resultAction.payload;
+            try {
 
-                        // Обновляем avatarUrl из ответа сервера 
-                        if (result && result.url) {
-                            setAvatarUrl(result.url);
+                setIsLoading(true);
+                setUploadProgress(0);
+                // Запускаем симуляцию прогресса
+                const progressInterval = setInterval(() => {
+                    setUploadProgress(prev => {
+                        // Максимум 90% до завершения загрузки
+                        if (prev >= 90) {
+                            clearInterval(progressInterval);
+                            return 90;
                         }
-                    }
-                    
-                    // Очищаем временное состояние
-                    setSelectedFile(null);
-                    
-                    // Освобождаем blob URL
-                    if (previewUrl && previewUrl.startsWith('blob:')) {
-                        URL.revokeObjectURL(previewUrl);
-                        setPreviewUrl(null);
-                    }
-                    
-                    setIsEdit(false);
-                    
-                } catch (err: any) {
-                    setError(err.message || 'Ошибка при обновлении аватара');
-                }
-            } else {
-                // Если изображение не выбрано, просто закрываем режим редактирования
-                setIsEdit(false);
-            }
-        };
+                        return prev + Math.floor(Math.random() * 5) + 1;
+                    });
+                }, 200)
+                const formData = new FormData();
+                formData.append('image', selectedFile);
 
-    const getAvatarUrl = () => {
-        
-        // Получим имя вашего облака Cloudinary
-        const cloudName = "dpwwnhwbg"; // Жестко закодированное значение
-        
-        // 1. Локальное превью имеет приоритет
-        if (previewUrl?.startsWith('blob:')) {
-            console.log('Using preview URL (blob)');
-            return previewUrl;
+                // Отправляем изображение на сервер
+                const response = await postApi.uploadImage(formData);
+
+
+                if (response && response.url) {
+                    // Очищаем интервал и устанавливаем 100%
+                    clearInterval(progressInterval);
+                    // Если загрузка успешна, сохраняем URL изображения
+                    setUploadProgress(100);
+                    setTimeout(() => {
+                        setUploadedImageUrl(response.url);
+                        setUploadProgress(0);
+                    }, 500)
+                    console.log('Изображение успешно загружено на сервер:', response.url);
+                    setError('')
+                    setIsEdit(false);
+                    return response.url;
+                } else {
+                    throw new Error('Неверный формат ответа от сервера');
+                }
+      setIsEdit(false);
+            } catch (err: any) {
+                setUploadProgress(0);
+                console.error('Ошибка при загрузке изображения:', err);
+                // Даже при ошибке загрузки на сервер, мы сохраняем превью
+                // чтобы пользователь мог удалить его и попробовать снова
+                setError(`Ошибка при загрузке на сервер: ${err.message || 'Неизвестная ошибка, попробуйте снова'}`);
+                // Сбрасываем input при ошибке, чтобы пользователь мог выбрать тот же файл снова
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              } finally {
+                setIsLoading(false);
+              }
+        } else {
+            // Если изображение не выбрано, просто закрываем режим редактирования
+            setIsEdit(false);
         }
-        
-        // 2. URL из состояния avatarUrl
-        if (avatarUrl) {
-            // Если это локальный blob URL
-            if (avatarUrl.startsWith('blob:')) {
-                console.log('Using avatarUrl (blob)');
-                return avatarUrl;
+    }
+
+
+    // Функция удаления загруженного изображения
+    const handleDeleteImage = async () => {
+        setIsLoading(true)
+        setAvatarUrl('')
+        setSelectedFile(null)
+        try {
+            if (uploadedImageUrl) {  // Если нет загруженного изображения, выходим
+                let filename;
+
+                // Проверяем, является ли URL URL-ом Cloudinary
+                if (uploadedImageUrl.includes('cloudinary.com')) {
+                    // Для Cloudinary URL извлекаем только имя файла без расширения
+                    // URL вида: https://res.cloudinary.com/dpwwnhwbg/image/upload/v1745711870/postlearn/lmzyemoxefeeua89uspx.png
+                    const parts = uploadedImageUrl.split('/');
+                    // Получаем последнюю часть URL (lmzyemoxefeeua89uspx.png)
+                    const lastPart = parts[parts.length - 1];
+                    // Удаляем расширение файла
+                    filename = lastPart.split('.')[0];
+
+                    console.log('Extracting Cloudinary filename:', filename);
+                } else {
+                    // Для локальных URL извлекаем путь после /uploads/
+                    filename = uploadedImageUrl.split('/uploads/').pop();
+                    console.log('Extracting local filename:', filename);
+                }
+
+                console.log(filename)
+                if (!filename) {
+                    throw new Error('Неверный формат URL изображения');
+                }
+
+                // Удаляем изображение с сервера
+                await postApi.deleteImage(filename);
+            } else {
+                console.log('URL файла на сервере отсутствует, пропускаем удаление с сервера');
             }
-            
-            // Если это абсолютный URL (например, от Cloudinary)
-            if (avatarUrl.startsWith('http')) {
-                console.log('Using avatarUrl (http)');
-                return avatarUrl;
+
+
+            // Очищаем состояния
+            setUploadedImageUrl(null);  // Сбрасываем URL загруженного изображения
+
+            setError('');  // Очищаем сообщения об ошибках
+            setIsLoading(false)
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''; // Сбрасываем значение input
             }
-            
-            // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-            if (avatarUrl.includes('/uploads/')) {
-                // Извлекаем имя файла
-                const fileId = avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary с папкой postlearn
-                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-                console.log('Created Cloudinary URL with folder:', cloudinaryUrl);
-                return cloudinaryUrl;
-            }
-            
-            // Другие относительные пути - добавляем API_URL
-            const fullUrl = `${API_URL}${avatarUrl}`;
-            console.log('Using avatarUrl with API_URL:', fullUrl);
-            return fullUrl;
+
+        } catch (err: any) {
+            console.error('Error deleting image:', err);
+            setError(err.message || 'Ошибка при удалении изображения');
         }
-        
-        // 3. URL из данных пользователя
-        if (user?.avatarUrl) {
-            // Если это абсолютный URL
-            if (user.avatarUrl.startsWith('http')) {
-                console.log('Using user.avatarUrl (http)');
-                return user.avatarUrl;
-            }
-            
-            // Если путь в формате /uploads/postlearn/filename или /uploads/filename
-            if (user.avatarUrl.includes('/uploads/')) {
-                // Извлекаем имя файла
-                const fileId = user.avatarUrl.split('/').pop();
-                // Формируем прямой URL Cloudinary с папкой postlearn
-                const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/postlearn/${fileId}`;
-                console.log('Created Cloudinary URL with folder:', cloudinaryUrl);
-                return cloudinaryUrl;
-            }
-            
-            // Другие относительные пути - добавляем API_URL
-            const fullUrl = `${API_URL}${user.avatarUrl}`;
-            console.log('Using user.avatarUrl with API_URL:', fullUrl);
-            return fullUrl;
-        }
-        
-        console.log('No avatar URL found');
-        return undefined;
+
     };
+    // Функция для получения корректного URL изображения
+
+
+
 
     return (
         <Container maxWidth="xl">
-            
-            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', height: '50vh', marginTop: 5, backgroundColor: '#fff2f2' }} >
-                <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh'}}>
-                    <Avatar 
-                        sx={{ width: 100, height: 100, margin: '0 auto' }} 
-                        src={getAvatarUrl()} 
+
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-around', height: '50vh', marginTop: 5, backgroundColor: '#fff2f2' }} >
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+                    <Avatar
+                        sx={{ width: 100, height: 100, margin: '0 auto' }}
+                        // src={getImageUrl(user.avatarUrl)}
+                        src={isEdit ? avatarUrl : getImageUrl(user.avatarUrl)}
                         imgProps={{ crossOrigin: "anonymous" }}
                     />
-                    {isEdit &&                     
-                    <Box sx={{ mt: 2, mb: 2 }}>
-                        <Button
-                            component="label"
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                        >
-                            Загрузить изображение
-                            <VisuallyHiddenInput
-                                type="file"
-                                onChange={handleImageChange}
-                                accept="image/*"
-                            />
-                        </Button>
-                        {error && (
-                            <Typography color="error" sx={{ mt: 2 }}>
-                                {error}
-                            </Typography>
-                        )}
-                        
-                    </Box>}
+                    {isEdit &&
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                            <Button
+                                component="label"
+                                variant="contained"
+                                startIcon={<CloudUploadIcon />}
+                            >
+                                Загрузить изображение
+                                <VisuallyHiddenInput
+                                    type="file"
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                />
+                            </Button>
+                            {error && (
+                                <Typography color="error" sx={{ mt: 2 }}>
+                                    {error}
+                                </Typography>
+                            )}
+
+                        </Box>}
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }} >
                     <Typography variant="h6">{user?.fullName}</Typography>
                     <Typography variant="body1">{user?.email}</Typography>
-                    <Box sx={{margin: 2}}>      
-                    <Button 
-                        sx={{margin: 1}} 
-                        variant="contained" 
-                        color="success" 
-                        onClick={() => isEdit ? handleSaveProfile() : setIsEdit(true)}
-                    >
-                        {isEdit? 'Сохранить' : 'Редактировать'}
-                    </Button>        
-                </Box> 
+
+                    {isEdit &&
+                        <Box sx={{ mt: 2, mb: 2 }}>
+
+
+                            {/* Индикатор прогресса загрузки */}
+                            {isLoading && !uploadedImageUrl && (
+                                <Box sx={{ width: '100%', mt: 2 }}>
+                                    <Box sx={{
+                                        height: 10,
+                                        bgcolor: '#e0e0e0',
+                                        borderRadius: 5,
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Box
+                                            sx={{
+                                                height: '100%',
+                                                width: `${uploadProgress}%`,
+                                                bgcolor: 'primary.main',
+                                                transition: 'width 0.3s ease-in-out'
+                                            }}
+                                        />
+                                    </Box>
+                                    <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                                        {uploadProgress}% загружено
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {uploadedImageUrl && (
+                                <Box sx={{ mt: 2, position: 'relative' }}>
+                                    {isLoading && <CircularProgress sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0
+                                    }} />}
+                                    <IconButton
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 8,
+                                            right: 8,
+                                            height: '25px',
+                                            width: '25px',
+                                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                            color: 'white',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                                            }
+                                        }}
+                                        onClick={handleDeleteImage}
+                                    >
+                                        X
+                                    </IconButton>
+                                </Box>
+                            )}
+                        </Box>}
+                    <Box sx={{ display: 'flex' }}>
+                        <Button
+                            sx={{ margin: 1 }}
+                            variant="contained"
+                            color="success"
+                            onClick={() => isEdit ? handleUploadImage() : setIsEdit(true)}
+                        >
+                            {isEdit ? 'Сохранить' : 'Редактировать'}
+                        </Button>
+                    </Box>
                 </Box>
 
             </Box>
@@ -205,4 +289,4 @@ const MyProfile = () => {
     )
 }
 
-export default MyProfile    
+export default MyProfile   
