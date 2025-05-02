@@ -7,7 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import Header from './components/Header';
 import FullPost from './components/Posts/FullPost';
 import MyPostsPage from './pages/MyPostsPage';
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { AppDispatch } from './store/store';
 import { checkAuth, setAuthState } from './store/slices/authSlice';
 import CreatePost from './components/Posts/CreatePost';
@@ -48,9 +48,13 @@ function App() {
   }, [dispatch]);
 
   return (
-    <Router>
-      <Header />
-      <Container maxWidth="xl" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Box sx={{
+      background: 'linear-gradient(135deg,rgb(226, 226, 226) 0%, #c3cfe2 100%)',
+      minHeight: '100vh'
+    }}>
+      <Router>
+        <Header />
+        <Container maxWidth="xl" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -82,6 +86,7 @@ function App() {
         </Routes>
       </Container>
     </Router>
+    </Box>
   );
 }
 

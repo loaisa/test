@@ -87,8 +87,6 @@ const MyProfile = () => {
                     formData
                 }))
 
-                console.log(response)
-
                 if (response.payload.url) {
                     // Очищаем интервал и устанавливаем 100%
                     clearInterval(progressInterval);
@@ -186,15 +184,41 @@ const MyProfile = () => {
 
     return (
         <Container maxWidth="xl">
-
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-around', height: '50vh', marginTop: 5, backgroundColor: '#fff2f2' }} >
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-                    <Avatar
-                        sx={{ width: 100, height: 100, margin: '0 auto' }}
-                        // src={getImageUrl(user.avatarUrl)}
-                        src={isEdit ? avatarUrl : getImageUrl(user.avatarUrl)}
-                        imgProps={{ crossOrigin: "anonymous" }}
-                    />
+            <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' }, 
+                alignItems: 'center', 
+                justifyContent: 'space-around',
+                margin: '40px auto',
+                padding: 4,
+                borderRadius: 4,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                background: 'linear-gradient(135deg, #fff9f9 0%, #ffe8e8 100%)',
+            }}>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    padding: 3,
+                }}>
+                    <Box sx={{
+                        position: 'relative',
+                        padding: 1,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(45deg, #fe6b8b 30%, #ff8e53 90%)',
+                    }}>
+                        <Avatar
+                            sx={{ 
+                                width: 120, 
+                                height: 120, 
+                                border: '4px solid white',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                            }}
+                            src={isEdit ? avatarUrl : getImageUrl(user.avatarUrl)}
+                            imgProps={{ crossOrigin: "anonymous" }}
+                        />
+                    </Box>
                     {isEdit &&
                         <Box sx={{ mt: 2, mb: 2 }}>
                             <Button
@@ -217,9 +241,31 @@ const MyProfile = () => {
 
                         </Box>}
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }} >
-                    <Typography variant="h6">{user?.fullName}</Typography>
-                    <Typography variant="body1">{user?.email}</Typography>
+                
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    padding: 3,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 1 }}>{user?.fullName}</Typography>
+                    <Typography 
+                        variant="body1" 
+                        sx={{ 
+                            color: 'text.secondary',
+                            backgroundColor: 'rgba(0,0,0,0.04)',
+                            padding: '4px 12px',
+                            borderRadius: 10,
+                            mb: 2
+                        }}
+                    >
+                        {user?.email}
+                    </Typography>
 
                     {isEdit &&
                         <Box sx={{ mt: 2, mb: 2 }}>
@@ -278,18 +324,28 @@ const MyProfile = () => {
                         </Box>}
                     <Box sx={{ display: 'flex' }}>
                         <Button
-                            sx={{ margin: 1 }}
+                            sx={{ 
+                                margin: 1,
+                                px: 3,
+                                py: 1, 
+                                borderRadius: 28,
+                                boxShadow: '0 4px 12px rgba(76,175,80,0.25)',
+                                transition: 'all 0.3s',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 6px 16px rgba(76,175,80,0.35)',
+                                }
+                            }}
                             variant="contained"
                             color="success"
+                            disabled={isLoading}
                             onClick={() => isEdit ? handleUploadImage() : setIsEdit(true)}
                         >
                             {isEdit ? 'Сохранить' : 'Редактировать'}
                         </Button>
                     </Box>
                 </Box>
-
             </Box>
-
         </Container>
     )
 }

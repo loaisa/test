@@ -62,9 +62,24 @@ const PostList = () => {
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%',  }}>
       {sortedPosts.map((post: Post) => (
-        <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2', }} key={post._id}>
+        <Card 
+          sx={{ 
+            width: '100%', 
+            marginBottom: 5, 
+            borderRadius: 3,
+            overflow: 'hidden',
+            transition: 'transform 0.3s, box-shadow 0.3s',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
+            },
+            background: 'linear-gradient(to bottom,rgb(231, 231, 231),rgb(194, 194, 194))'
+          }} 
+          key={post._id}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
@@ -75,12 +90,32 @@ const PostList = () => {
               title={post.title}
             />
           </Box>
-          <CardMedia
-            component="img"
-            height="194"
-            image={getImageUrl(post.imageUrl)}
-            alt={post.title}
-          />
+          <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+            <CardMedia
+              component="img"
+              height="240"
+              image={getImageUrl(post.imageUrl)}
+              alt={post.title}
+              sx={{ 
+                transition: 'transform 0.6s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                }
+              }}
+            />
+            <Box sx={{ 
+              position: 'absolute', 
+              bottom: 0, 
+              right: 0, 
+              bgcolor: 'rgba(0,0,0,0.6)', 
+              color: 'white',
+              px: 2,
+              py: 0.5,
+              borderTopLeftRadius: 8
+            }}>
+              <Typography variant="caption">Просмотры: {post.viewsCount}</Typography>
+            </Box>
+          </Box>
           <CardContent >
             <Typography variant="body2" sx={{ color: '', margin: 2 }}>
               {post.text}
@@ -91,35 +126,74 @@ const PostList = () => {
             <Typography variant="body2" sx={{ color: '', margin: 2 }}>
               Автор: {post.user.fullName}
             </Typography>
-            <Typography variant="body2" sx={{ color: '', margin: 2 }}>Тэги: {post.tags.join(', ')}</Typography>
-            <Typography variant="body2" sx={{ color: '', margin: 2 }}>
-              Просмотры: {post.viewsCount}
-            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, my: 2 }}>
+              {post.tags.map(tag => (
+                <Typography 
+                  key={tag} 
+                  variant="caption" 
+                  sx={{ 
+                    bgcolor: 'rgba(131, 131, 131, 0.6)', 
+                    color: 'black',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 10,
+                    fontWeight: 500,
+                    fontSize: '1rem !important',
+                    cursor: 'pointer'
+                  }}
+                >
+                  #{tag}
+                </Typography>
+              ))}
+            </Box>
           </CardContent>
-          <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'end' }}>
-            <Button sx={{ margin: 1 }} variant="contained">
-              <RouterLink to={`/posts/${post._id}`} style={{ textDecoration: 'none', color: 'white' }}>
-                Открыть статью
-              </RouterLink>
+          <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1.5 }}>
+            <Button                         
+              variant="contained" 
+              component={RouterLink} 
+              to={`/posts/${post._id}`}
+              sx={{
+                borderRadius: 6,
+                px: 2.5,
+                background: 'linear-gradient(45deg,rgb(92, 92, 92) 30%,rgb(92, 92, 92) 90%)',
+                boxShadow: '0 3px 10px rgba(33, 150, 243, 0.3)',
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 16px rgba(33, 150, 243, 0.4)',
+                }
+              }}
+            >
+              Читать статью
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
                 aria-label="add to favorites"
                 onClick={() => handleToggleLike(post._id)}
                 sx={{
+                  transition: 'transform 0.3s',
                   '&:hover': {
-                    '& .MuiSvgIcon-root': {
-                      color: 'red'
-                    }
+                    transform: 'scale(1.15)',
                   }
                 }}
               >
-                <FavoriteIcon sx={{
-                  color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
-                  transition: 'color 0.3s ease'
-                }} />
+                <FavoriteIcon 
+                  sx={{
+                    color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
+                    fontSize: 28,
+                    transition: 'color 0.3s, transform 0.3s',
+                    transform: post.likedBy?.includes(user?._id) ? 'scale(1.1)' : 'scale(1)',
+                  }} 
+                />
               </IconButton>
-              <Typography variant="body2" color="">
+              <Typography 
+                variant="body2" 
+                fontWeight="bold"
+                sx={{ 
+                  ml: 0.5,
+                  minWidth: 20
+                }}
+              >
                 {post.likesCount || ''}
               </Typography>
             </Box>
