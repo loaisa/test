@@ -157,7 +157,7 @@ app.post('/posts', checkAuth, postCreateValidationValidation, validationErrors, 
 app.delete('/posts/:id', checkAuth, remove) //удаляем пост по id
 app.patch('/posts/:id', checkAuth, postCreateValidationValidation, validationErrors, update) //обновляем пост по id
 app.post('/posts/:id/comment', checkAuth, addComment) //добавляем комментарий к посту
-
+app.get('/posts/tag/:tag', getPostsByTag); //получаем посты по тегу
 
 // Добавляем обработчик для корневого маршрута
 app.get('/', (req, res) => {

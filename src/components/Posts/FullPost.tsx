@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, Typography, CircularProgress, Box, Container, IconButton, TextField, Button, Divider, List, ListItem, ListItemText, Avatar, Paper } from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -148,6 +148,7 @@ const FullPost = React.memo(() => {
     const loading = useSelector((state: RootState) => state.posts.loading);
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (id) {
@@ -160,6 +161,10 @@ const FullPost = React.memo(() => {
     const handleToggleLike = useCallback((postId: string) => {
         dispatch(togglePostLike(postId));
     }, [dispatch]);
+
+    const handleTagClick = (tag: string) => {
+        navigate(`/tags/${tag}`);
+    };
 
     if (loading && !post) {
         return (
@@ -260,8 +265,15 @@ const FullPost = React.memo(() => {
                                         px: 1.5,
                                         py: 0.5,
                                         borderRadius: 10,
-                                        fontWeight: 500
-                                    }}
+                                        fontWeight: 500,
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            color: 'primary.main',
+                                            bgcolor: 'rgba(0,0,0,0.08)'
+                                        }
+                                    }
+                                }
+                                onClick={() => handleTagClick(tag)}
                                 >
                                     #{tag}
                                 </Typography>

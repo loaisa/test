@@ -177,6 +177,24 @@ export const getTags = async (req, res) => {
         })
     }
 }
+export const getPostsByTag = async (req, res) => {
+    try {
+      const tag = req.params.tag;
+      
+      // Находим все посты, содержащие указанный тег
+      const posts = await PostModel.find({ tags: tag })
+        .populate({ path: 'user', select: ['_id', 'fullName', 'avatarUrl'] })
+        .sort({ createdAt: -1 }) // Сортировка от новых к старым
+        .exec();
+      
+      res.json(posts);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        message: 'Не удалось получить посты по тегу'
+      });
+    }
+  };
 
 export const toggleLike = async (req, res) => {
     try {

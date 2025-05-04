@@ -13,6 +13,7 @@ import { checkAuth, setAuthState } from './store/slices/authSlice';
 import CreatePost from './components/Posts/CreatePost';
 import MyProfile from './components/MyProfile';
 import ProtectedRoute from './components/ProtectedRoute';
+import TagPosts from './components/Posts/TagsPosts';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -60,6 +61,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/posts/:id" element={<FullPost />} />
+          <Route path="/tags/:tag" element={<TagPosts />} />
 
           {/* Защищенные маршруты */}
 

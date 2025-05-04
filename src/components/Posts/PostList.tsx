@@ -10,8 +10,8 @@ import { fetchPosts, togglePostLike } from '../../store/slices/postsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { Link as RouterLink } from 'react-router-dom';
 import { Post } from '../../types/types';
-import {getImageUrl} from '../../utils/GetImageUrl'
-
+import { getImageUrl } from '../../utils/GetImageUrl'
+import { useNavigate } from 'react-router-dom';
 
 const PostSkeleton = () => (
   <Card sx={{ width: '100%', marginBottom: 5, backgroundColor: '#fff2f2' }}>
@@ -22,36 +22,53 @@ const PostSkeleton = () => (
     />
     <Skeleton variant="rectangular" height={250} />
     <CardContent >
-      <Skeleton variant="text" height={30}/>
-      <Skeleton variant="text" height={30}/>
-      <Skeleton variant="text" height={30}/>
+      <Skeleton variant="text" height={30} />
+      <Skeleton variant="text" height={30} />
+      <Skeleton variant="text" height={30} />
       <Skeleton variant="text" height={30} width="60%" />
     </CardContent>
 
-    <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'end', gap:2}}>
+    <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'end', gap: 2 }}>
       <Skeleton sx={{ display: 'flex', justifyContent: 'end', height: 60, }} variant="text" width="20%" />
       <Skeleton variant="circular" width={30} height={30} />
     </CardActions>
   </Card>
 );
 
-const PostList = () => {
-  const { posts, loading } = useSelector((state: RootState) => state.posts);
+// Добавляем интерфейс для пропсов
+interface PostListProps {
+  posts?: Post[];
+  loading?: boolean;
+}
+
+
+const PostList = ({ posts: propPosts }: PostListProps) => {
+  const { posts: storePosts, loading } = useSelector((state: RootState) => state.posts);
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>(); //типизация dispatch 
+  const navigate = useNavigate();
+  const posts = propPosts || storePosts;
+
   useEffect(() => {
-    dispatch(fetchPosts()); //вызов fetchPosts
+    if (posts.length === 0) {
+      dispatch(fetchPosts());
+    } else {
+      // Обновляем данные в фоновом режиме без показа скелетона
+      dispatch(fetchPosts());
+    }
   }, []);
 
   const handleToggleLike = (postId: string) => {
     dispatch(togglePostLike(postId));
   }
-
+  const handleTagClick = (tag: string) => {
+    navigate(`/tags/${tag}`);
+  };
   // Добавляем сортировку постов
   const sortedPosts = [...posts].sort((a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-  if (loading) {
+  if (loading && posts.length === 0) {
     return (
       <Box sx={{ width: '100%' }}>
         {[1, 2, 3].map((item) => (
@@ -61,13 +78,15 @@ const PostList = () => {
     );
   }
 
+
   return (
-    <Box sx={{ width: '100%',  }}>
+    <Box sx={{ width: '100%', }}>
       {sortedPosts.map((post: Post) => (
-        <Card 
-          sx={{ 
-            width: '100%', 
-            marginBottom: 5, 
+        //карточка поста
+        <Card
+          sx={{
+            width: '100%',
+            marginBottom: 5,
             borderRadius: 3,
             overflow: 'hidden',
             transition: 'transform 0.3s, box-shadow 0.3s',
@@ -77,9 +96,10 @@ const PostList = () => {
               boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
             },
             background: 'linear-gradient(to bottom,rgb(231, 231, 231),rgb(194, 194, 194))'
-          }} 
+          }}
           key={post._id}
         >
+          {/* блок с аватаром и заголовком поста */}
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
             <Avatar
               sx={{ width: 32, height: 32, mr: 1, bgcolor: 'primary.main' }}
@@ -90,24 +110,26 @@ const PostList = () => {
               title={post.title}
             />
           </Box>
+          {/* блок с изображением поста */}
           <Box sx={{ position: 'relative', overflow: 'hidden' }}>
             <CardMedia
               component="img"
               height="240"
               image={getImageUrl(post.imageUrl)}
               alt={post.title}
-              sx={{ 
+              sx={{
                 transition: 'transform 0.6s ease',
                 '&:hover': {
                   transform: 'scale(1.05)'
                 }
               }}
             />
-            <Box sx={{ 
-              position: 'absolute', 
-              bottom: 0, 
-              right: 0, 
-              bgcolor: 'rgba(0,0,0,0.6)', 
+            {/* блок с количеством просмотров поста */}
+            <Box sx={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              bgcolor: 'rgba(0,0,0,0.6)',
               color: 'white',
               px: 2,
               py: 0.5,
@@ -117,40 +139,50 @@ const PostList = () => {
             </Box>
           </Box>
           <CardContent >
+            {/* блок с текстом поста */}
             <Typography variant="body2" sx={{ color: '', margin: 2 }}>
               {post.text}
             </Typography>
+            {/* блок с датой создания поста */}
             <Typography variant="body2" sx={{ color: '', margin: 2 }}>
               Дата создания: {new Date(post.createdAt).toLocaleDateString()}
             </Typography>
+            {/* блок с автором поста */}
             <Typography variant="body2" sx={{ color: '', margin: 2 }}>
               Автор: {post.user.fullName}
             </Typography>
+            {/* блок с тегами поста */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, my: 2 }}>
               {post.tags.map(tag => (
-                <Typography 
-                  key={tag} 
-                  variant="caption" 
-                  sx={{ 
-                    bgcolor: 'rgba(131, 131, 131, 0.6)', 
+                <Typography
+                  key={tag}
+                  variant="caption"
+                  sx={{
+                    bgcolor: 'rgba(131, 131, 131, 0.6)',
                     color: 'black',
                     px: 1.5,
                     py: 0.5,
                     borderRadius: 10,
                     fontWeight: 500,
                     fontSize: '1rem !important',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: 'white',
+                      bgcolor: 'rgba(0,0,0,0.08)'
+                    }
                   }}
+                  onClick={() => handleTagClick(tag)}
                 >
                   #{tag}
                 </Typography>
               ))}
             </Box>
+            {/* блок с кнопкой для перехода на страницу поста */}
           </CardContent>
           <CardActions disableSpacing sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1.5 }}>
-            <Button                         
-              variant="contained" 
-              component={RouterLink} 
+            <Button
+              variant="contained"
+              component={RouterLink}
               to={`/posts/${post._id}`}
               sx={{
                 borderRadius: 6,
@@ -177,19 +209,19 @@ const PostList = () => {
                   }
                 }}
               >
-                <FavoriteIcon 
+                <FavoriteIcon
                   sx={{
                     color: post.likedBy?.includes(user?._id) ? 'red' : 'inherit',
                     fontSize: 28,
                     transition: 'color 0.3s, transform 0.3s',
                     transform: post.likedBy?.includes(user?._id) ? 'scale(1.1)' : 'scale(1)',
-                  }} 
+                  }}
                 />
               </IconButton>
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 fontWeight="bold"
-                sx={{ 
+                sx={{
                   ml: 0.5,
                   minWidth: 20
                 }}
