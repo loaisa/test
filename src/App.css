@@ -36,3 +36,43 @@
     transform: rotate(360deg);
   }
 }
+button {
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+  margin: 1rem;
+  cursor: pointer;
+  transition: 0.5s all ease-in-out;
+  z-index: 1000;
+
+  &.visible {
+    padding: 1rem 2rem;
+    margin: 1rem;
+    border-radius: 1rem;
+    position: fixed;
+    bottom: -5rem;
+    right: 1rem;
+    transition: 0.2s all ease-in-out;
+    background-color: black;
+    color: white;
+    border: none;
+
+    &.show {
+      bottom: 0;
+    }
+  }
+
+  &.back {
+    background-color: black;
+    color: white;
+    border: none;
+  }
+
+  &:hover {
+    background: #343434;
+    transform: scale(1.05);
+    transition: 0.2s all ease-in-out;
+  }
+}

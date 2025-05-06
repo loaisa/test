@@ -91,7 +91,7 @@ const TagsFilter = () => {
             '&:hover': {
                 boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
             },
-            width: '100%'
+            width: {xs: 'auto', md: '100%'}, //для маленьких экранов ширина блока не 100%
         }}>
             <Typography
                 variant="h6"

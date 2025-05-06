@@ -74,6 +74,7 @@ const CreatePost: React.FC = () => {
       // Проверяем наличие изображения
       if (!postData.imageUrl) {
         setError('Пожалуйста, загрузите изображение');
+        setIsLoading(false)
         return; // Прерываем выполнение функции
       }
 

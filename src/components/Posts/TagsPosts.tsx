@@ -33,7 +33,7 @@ const TagPosts: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+      <Box  sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
         <CircularProgress />
       </Box>
     );
@@ -50,7 +50,7 @@ const TagPosts: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" >
     <Paper 
       elevation={0} 
       sx={{ 
