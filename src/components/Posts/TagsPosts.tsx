@@ -50,7 +50,7 @@ const TagPosts: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" >
+    <Container maxWidth="lg" sx={{ mt: 5 }}>
     <Paper 
       elevation={0} 
       sx={{ 

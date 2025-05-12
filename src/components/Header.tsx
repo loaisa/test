@@ -109,6 +109,7 @@ const Header = () => {
               </Button>
             ))}
           </Box>
+          
           {isAuth ? (
             <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
               <Typography sx={{ mr: 2 }}>{user?.fullName}</Typography>

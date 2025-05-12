@@ -15,7 +15,7 @@ const TagsSkeleton = () => (
         borderRadius: 3,
         background: 'linear-gradient(to bottom, #fff8f8, #fff2f2)',
         boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
-        width: '100%',
+        width: {xs: 'auto', md: '100%'},
         height: 'auto'
     }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5 }}>
@@ -60,6 +60,7 @@ const TagsFilter = () => {
             const fetchTags = async () => {
                 try {
                     const response = await postApi.getTags();
+                    
                 setTags(response);
             } catch (error) {
                 console.error('Error fetching tags:', error);

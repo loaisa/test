@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import '../App.css';
 import debounce from 'lodash/debounce';
+import SearchComponent from '../components/Search/SearchComponent';
 
 const MainPage = () => {
 
@@ -48,6 +49,7 @@ const MainPage = () => {
                     order: { xs: 2, md: 1 }, //для маленьких экранов порядок блоков меняется
                     flexGrow: 1
                 }}>
+                    <SearchComponent />
                     <PostList />
                 </Box>
                 <Box sx={{
