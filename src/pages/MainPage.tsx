@@ -2,15 +2,33 @@ import PostList from '../components/Posts/PostList';
 import Container from '@mui/material/Container';
 import TagsFilter from '../components/TagsFilter';
 import { Box } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import '../App.css';
 import debounce from 'lodash/debounce';
 import SearchComponent from '../components/Search/SearchComponent';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 const MainPage = () => {
 
     const [scroll, setScroll] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null)
+    const { posts } = useSelector((state: RootState) => state.posts)
+    const [searchValue, setSearchValue] = useState('');
+
+
+
+
+    // Фильтруем посты на основе поискового запроса
+    const filteredPosts = useMemo(() => {
+        if (!searchValue.trim()) return posts;
+
+        return posts.filter(post =>
+            post.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+            post.text.toLowerCase().includes(searchValue.toLowerCase()) ||
+            post.tags.some(tag => tag.toLowerCase().includes(searchValue.toLowerCase()))
+        );
+    }, [posts, searchValue])
 
     const debouncedHandleScroll = debounce(() => {
         setScroll(window.scrollY);
@@ -28,7 +46,6 @@ const MainPage = () => {
         };
     }, []);
 
-    console.log('Перерендекр')
 
     return (
         <Container maxWidth="lg" ref={containerRef}>
@@ -49,8 +66,10 @@ const MainPage = () => {
                     order: { xs: 2, md: 1 }, //для маленьких экранов порядок блоков меняется
                     flexGrow: 1
                 }}>
-                    <SearchComponent />
-                    <PostList />
+                    <SearchComponent
+                        onSearch={setSearchValue}
+                    />
+                    <PostList posts={filteredPosts} />
                 </Box>
                 <Box sx={{
                     order: { xs: 1, md: 2 },

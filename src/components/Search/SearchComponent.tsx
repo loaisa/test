@@ -2,6 +2,7 @@ import { Paper, InputBase, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/material/styles';
 import { useState } from 'react';
+import { debounce } from 'lodash';
 
 const SearchBar = styled(Paper)(() => ({
     padding: '2px 4px',
@@ -49,29 +50,40 @@ const SearchButton = styled(IconButton)(() => ({
     },
 }));
 
-const SearchComponent = () => {
+interface SearchComponentProps {
+    onSearch: (query: string) => void;
+}
+
+const SearchComponent = ({ onSearch }: SearchComponentProps) => {
     const [searchQuery, setSearchQuery] = useState('');
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Здесь будет логика поиска
-        console.log('Поиск:', searchQuery);
-    };
+
+
+    const debouncedSearch = debounce((val:string) => {
+        onSearch(val)
+    }, 500);
+
+    const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value
+        setSearchQuery(val);
+        debouncedSearch(val)
+
+    }
 
     return (
         <Box sx={{
             width: '100%',
             mb: 4,
             position: 'sticky',
-            top:20,
-            zIndex:1000,
+            top: 20,
+            zIndex: 1000,
         }}>
-            <form onSubmit={handleSearch}>
+            <form >
                 <SearchBar>
                     <SearchInput
                         placeholder="Поиск постов..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={onChangeInput}
                     />
                     <SearchButton type="submit" aria-label="поиск">
                         <SearchIcon />
