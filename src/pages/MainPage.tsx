@@ -21,6 +21,7 @@ const MainPage = () => {
 
     // Фильтруем посты на основе поискового запроса
     const filteredPosts = useMemo(() => {
+
         if (!searchValue.trim()) return posts;
 
         return posts.filter(post =>
@@ -46,7 +47,7 @@ const MainPage = () => {
         };
     }, []);
 
-
+    console.log('Перерендер')
     return (
         <Container maxWidth="lg" ref={containerRef}>
             <button

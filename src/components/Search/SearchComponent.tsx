@@ -61,7 +61,7 @@ const SearchComponent = ({ onSearch }: SearchComponentProps) => {
 
     const debouncedSearch = debounce((val:string) => {
         onSearch(val)
-    }, 500);
+    }, 1000);
 
     const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value

@@ -149,6 +149,8 @@ const FullPost = React.memo(() => {
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    
+    console.log(user)
 
     useEffect(() => {
         if (id) {
@@ -398,7 +400,7 @@ const FullPost = React.memo(() => {
                     Комментарии ({post.comments?.length || 0})
                 </Typography>
 
-                {user ? (
+                {user && user._id ? (
                     <CommentForm postId={post._id} loading={loading} />
                 ) : (
                     <Paper

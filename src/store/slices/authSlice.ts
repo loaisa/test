@@ -97,6 +97,8 @@ const authSlice = createSlice({
             state.isAuth = false; //удаляем isAuth из state
             localStorage.removeItem('token'); //удаляем токен из localStorage
             localStorage.removeItem('isAuth');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('user');
         },
         // Добавляем обработчик для тихого обновления данных
         updateUserData: (state, action) => {
